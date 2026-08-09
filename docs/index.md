@@ -149,7 +149,7 @@ bun add @sylphx/coderag
 Use CodeRAG with Claude, Cursor, or any MCP-compatible AI assistant:
 
 ```bash
-npx @sylphx/locus --root=/path/to/project
+npx -y @sylphx/locus --root=/path/to/project
 ```
 
 Or add to your `claude_desktop_config.json`:
