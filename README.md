@@ -16,7 +16,6 @@ local-first hybrid code search for AI assistants. One MCP call indexes your repo
 
 [![npm brand](https://img.shields.io/npm/v/@sylphx/locus?style=flat-square&label=locus)](https://www.npmjs.com/package/@sylphx/locus)
 [![npm core](https://img.shields.io/npm/v/@sylphx/coderag?style=flat-square&label=core)](https://www.npmjs.com/package/@sylphx/coderag)
-[![CI](https://img.shields.io/github/actions/workflow/status/SylphxAI/coderag/ci.yml?style=flat-square)](https://github.com/SylphxAI/coderag/actions)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
 **Local-first** · **MCP + CLI + SDK** · **Hybrid TF-IDF + Vector** · **Rust rmcp** · **Evidence locators**
@@ -102,7 +101,7 @@ directory of keyword hits.**
 | **Zero external deps** | ✅ | ❌ Vector DB + embed API | ✅ Local by default |
 | **Offline support** | ✅ | ❌ | ✅ |
 | **Result shape** | Whole files / lines | Often whole files | AST chunks (functions, classes) |
-| **Agent setup** | Shell tool | Docker + services | `npx @sylphx/locus` |
+| **Agent setup** | Shell tool | Docker + services | `npx -y @sylphx/locus` |
 
 Search latency and indexing throughput: reproduce with
 [`bun run benchmark:public-proof`](#benchmark-proof) — do not trust hand-waved
@@ -115,7 +114,7 @@ Full comparison: [how search works](docs/guide/how-search-works.md).
 **Install once. Point at your repo.**
 
 ```bash
-claude mcp add locus -- npx @sylphx/locus --root=/absolute/path/to/project
+claude mcp add locus -- npx -y @sylphx/locus --root=/absolute/path/to/project
 # transitional (expand–contract still valid):
 ```
 
@@ -159,7 +158,7 @@ export async function authenticate(username: string, password: string) {
 ### Claude Code (recommended)
 
 ```bash
-claude mcp add locus -- npx @sylphx/locus --root=/absolute/path/to/project
+claude mcp add locus -- npx -y @sylphx/locus --root=/absolute/path/to/project
 # transitional (expand–contract still valid):
 ```
 
@@ -181,7 +180,7 @@ Add to `claude_desktop_config.json`:
 ### Any MCP Client
 
 ```bash
-npx @sylphx/locus --root=/absolute/path/to/project
+npx -y @sylphx/locus --root=/absolute/path/to/project
 ```
 
 Need Cursor, VS Code, Windsurf, or library usage? See the
@@ -243,7 +242,7 @@ results.
 | Package | Description | Install |
 | --- | --- | --- |
 | [@sylphx/coderag](packages/core) | Core search library | `npm i @sylphx/coderag` |
-| [@sylphx/locus](packages/mcp-server) | MCP server for AI assistants | `npx @sylphx/locus` |
+| [@sylphx/locus](packages/mcp-server) | MCP server for AI assistants | `npx -y @sylphx/locus` |
 
 ---
 
