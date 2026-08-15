@@ -6,7 +6,6 @@ SylphxAI/coderag is a TypeScript/Bun monorepo for hybrid code search and an MCP 
 
 - State: `active`
 - Layer: `tooling`
-- Machine manifest: [`.doctrine/project.json`](./.doctrine/project.json)
 
 ## Goals
 
