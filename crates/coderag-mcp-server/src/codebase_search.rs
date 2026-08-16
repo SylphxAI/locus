@@ -25,14 +25,31 @@ pub fn codebase_search(args: Value) -> Result<CallToolResult, rmcp::ErrorData> {
 
     let limit = args.get("limit").and_then(Value::as_u64).unwrap_or(10);
 
+    let include_content = args
+        .get("include_content")
+        .and_then(Value::as_bool)
+        .unwrap_or(true);
+
     let _ = cli_bridge::invoke_cli_tool(
         "coderag_index",
         json!({ "root": root, "mode": "auto" }),
     )?;
 
+    let mut search_args = json!({
+        "root": root,
+        "query": query,
+        "limit": limit,
+        "include_content": include_content,
+    });
+    for key in ["file_extensions", "path_filter", "exclude_paths"] {
+        if let Some(value) = args.get(key) {
+            search_args[key] = value.clone();
+        }
+    }
+
     let mut search = cli_bridge::invoke_cli_tool(
         "coderag_search",
-        json!({ "root": root, "query": query, "limit": limit }),
+        search_args,
     )?;
 
     if let Some(structured) = search.structured_content.as_mut() {

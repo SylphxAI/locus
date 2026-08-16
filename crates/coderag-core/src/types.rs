@@ -23,6 +23,7 @@ pub struct SearchHit {
     pub score_components: Vec<ScoreComponent>,
     pub start_line: Option<u32>,
     pub end_line: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub snippet: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub symbol_name: Option<String>,

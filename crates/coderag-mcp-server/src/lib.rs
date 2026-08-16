@@ -19,6 +19,14 @@ pub struct CodebaseSearchRequest {
     pub query: String,
     #[schemars(description = "Maximum number of results")]
     pub limit: Option<u64>,
+    #[schemars(description = "Include code snippets in results; defaults to true")]
+    pub include_content: Option<bool>,
+    #[schemars(description = "Only return paths ending with one of these extensions")]
+    pub file_extensions: Option<Vec<String>>,
+    #[schemars(description = "Only return paths containing this substring")]
+    pub path_filter: Option<String>,
+    #[schemars(description = "Exclude paths containing any of these substrings")]
+    pub exclude_paths: Option<Vec<String>>,
 }
 
 pub const SERVER_NAME: &str = "locus";
@@ -54,6 +62,18 @@ impl CoderagMcp {
         });
         if let Some(root) = request.root {
             args["root"] = json!(root);
+        }
+        if let Some(include_content) = request.include_content {
+            args["include_content"] = json!(include_content);
+        }
+        if let Some(file_extensions) = request.file_extensions {
+            args["file_extensions"] = json!(file_extensions);
+        }
+        if let Some(path_filter) = request.path_filter {
+            args["path_filter"] = json!(path_filter);
+        }
+        if let Some(exclude_paths) = request.exclude_paths {
+            args["exclude_paths"] = json!(exclude_paths);
         }
         codebase_search::codebase_search(args)
     }
@@ -109,5 +129,9 @@ mod tests {
         assert!(schema.get("properties").is_some());
         let properties = schema.get("properties").expect("properties");
         assert!(properties.get("query").is_some());
+        assert!(properties.get("include_content").is_some());
+        assert!(properties.get("file_extensions").is_some());
+        assert!(properties.get("path_filter").is_some());
+        assert!(properties.get("exclude_paths").is_some());
     }
 }

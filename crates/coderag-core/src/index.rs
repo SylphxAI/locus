@@ -45,6 +45,33 @@ pub enum IndexMode {
     Auto,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize)]
+pub struct SearchOptions {
+    #[serde(default = "default_include_content")]
+    pub include_content: bool,
+    #[serde(default)]
+    pub file_extensions: Vec<String>,
+    #[serde(default)]
+    pub path_filter: Option<String>,
+    #[serde(default)]
+    pub exclude_paths: Vec<String>,
+}
+
+fn default_include_content() -> bool {
+    true
+}
+
+impl Default for SearchOptions {
+    fn default() -> Self {
+        Self {
+            include_content: true,
+            file_extensions: Vec::new(),
+            path_filter: None,
+            exclude_paths: Vec::new(),
+        }
+    }
+}
+
 impl IndexMode {
     pub fn parse(value: &str) -> Self {
         match value {
@@ -378,6 +405,15 @@ fn extract_symbol_spans(content: &str) -> Vec<SymbolSpan> {
 }
 
 pub fn search_index(index: &SearchIndex, query: &str, limit: usize) -> Vec<crate::types::SearchHit> {
+    search_index_with_options(index, query, limit, &SearchOptions::default())
+}
+
+pub fn search_index_with_options(
+    index: &SearchIndex,
+    query: &str,
+    limit: usize,
+    options: &SearchOptions,
+) -> Vec<crate::types::SearchHit> {
     let query_terms = tokenize(query);
     if query_terms.is_empty() || index.chunks.is_empty() {
         return vec![];
@@ -389,6 +425,10 @@ pub fn search_index(index: &SearchIndex, query: &str, limit: usize) -> Vec<crate
 
     let mut scored = Vec::new();
     for chunk in &index.chunks {
+        if !matches_filters(&chunk.path, options) {
+            continue;
+        }
+
         let mut score = 0.0;
         let mut matched = Vec::new();
         let doc_len = chunk.tokens.len() as f64;
@@ -427,7 +467,7 @@ pub fn search_index(index: &SearchIndex, query: &str, limit: usize) -> Vec<crate
                 score_components,
                 start_line: Some(chunk.start_line),
                 end_line: Some(chunk.end_line),
-                snippet: Some(chunk.text.clone()),
+                snippet: options.include_content.then(|| chunk.text.clone()),
                 symbol_name: chunk.symbol_name.clone(),
                 chunk_type: Some(chunk.chunk_type.clone()),
             });
@@ -437,6 +477,102 @@ pub fn search_index(index: &SearchIndex, query: &str, limit: usize) -> Vec<crate
     scored.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal));
     scored.truncate(limit);
     scored
+}
+
+fn matches_filters(path: &str, options: &SearchOptions) -> bool {
+    if !options.file_extensions.is_empty()
+        && !options
+            .file_extensions
+            .iter()
+            .any(|extension| path.ends_with(extension))
+    {
+        return false;
+    }
+
+    if let Some(path_filter) = options.path_filter.as_deref() {
+        if !path.contains(path_filter) {
+            return false;
+        }
+    }
+
+    !options
+        .exclude_paths
+        .iter()
+        .any(|exclude| path.contains(exclude))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn fixture_index() -> SearchIndex {
+        let mut index = SearchIndex {
+            root: "/tmp/locus-search-options".into(),
+            chunks: vec![
+                Chunk {
+                    path: "src/auth/login.ts".into(),
+                    start_line: 1,
+                    end_line: 3,
+                    text: "export function authenticate() {}".into(),
+                    tokens: tokenize("src/auth/login.ts authenticate user login"),
+                    symbol_name: Some("authenticate".into()),
+                    chunk_type: "function".into(),
+                },
+                Chunk {
+                    path: "src/auth/login.test.ts".into(),
+                    start_line: 1,
+                    end_line: 3,
+                    text: "test authenticate login".into(),
+                    tokens: tokenize("src/auth/login.test.ts authenticate user login"),
+                    symbol_name: None,
+                    chunk_type: "file".into(),
+                },
+                Chunk {
+                    path: "src/auth/login.rs".into(),
+                    start_line: 1,
+                    end_line: 3,
+                    text: "fn authenticate() {}".into(),
+                    tokens: tokenize("src/auth/login.rs authenticate user login"),
+                    symbol_name: Some("authenticate".into()),
+                    chunk_type: "function".into(),
+                },
+            ],
+            ..SearchIndex::default()
+        };
+        rebuild_doc_freq(&mut index);
+        index
+    }
+
+    #[test]
+    fn search_options_filter_paths_and_suppress_content() {
+        let index = fixture_index();
+        let options = SearchOptions {
+            include_content: false,
+            file_extensions: vec![".ts".into()],
+            path_filter: Some("src/auth".into()),
+            exclude_paths: vec![".test.".into()],
+        };
+
+        let hits = search_index_with_options(&index, "authenticate login", 10, &options);
+
+        assert_eq!(hits.len(), 1);
+        assert_eq!(hits[0].path, "src/auth/login.ts");
+        assert!(hits[0].snippet.is_none());
+    }
+
+    #[test]
+    fn default_search_options_keep_existing_results_and_content() {
+        let index = fixture_index();
+        let hits = search_index_with_options(
+            &index,
+            "authenticate",
+            10,
+            &SearchOptions::default(),
+        );
+
+        assert_eq!(hits.len(), 3);
+        assert!(hits.iter().all(|hit| hit.snippet.is_some()));
+    }
 }
 
 pub fn index_path(root: &Path) -> PathBuf {

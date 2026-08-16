@@ -2,7 +2,9 @@ use std::path::Path;
 use std::sync::{Mutex, OnceLock};
 use std::time::Instant;
 
-use crate::index::{refresh_index, search_index, IndexMode, SearchIndex};
+use crate::index::{
+    refresh_index, search_index_with_options, IndexMode, SearchIndex, SearchOptions,
+};
 use crate::store::{load_index, save_index};
 use crate::types::ToolEnvelope;
 
@@ -102,6 +104,15 @@ fn coderag_search(input: serde_json::Value) -> ToolEnvelope {
         Err(envelope) => return envelope,
     };
 
-    let results = search_index(&index, query, limit);
+    let options = match serde_json::from_value::<SearchOptions>(input.clone()) {
+        Ok(options) => options,
+        Err(error) => {
+            return ToolEnvelope::error(
+                "INVALID_SEARCH_OPTIONS",
+                &format!("Invalid search options: {error}"),
+            )
+        }
+    };
+    let results = search_index_with_options(&index, query, limit, &options);
     ToolEnvelope::ok_search(query, results, started.elapsed().as_millis() as u64)
 }

@@ -90,3 +90,44 @@ fn codebase_search_matches_golden_baseline_paths() {
         );
     }
 }
+
+#[test]
+fn codebase_search_forwards_filters_and_content_policy() {
+    // SAFETY: test-only single-threaded env mutation.
+    unsafe {
+        std::env::set_var("LOCUS_RUST_CLI", resolve_cli_binary());
+    }
+
+    let root = fixture_root();
+    let result = codebase_search::codebase_search(json!({
+        "root": root.to_string_lossy(),
+        "query": "user authentication login",
+        "limit": 5,
+        "include_content": false,
+        "file_extensions": [".ts"],
+        "path_filter": "src/auth",
+        "exclude_paths": ["test"],
+    }))
+    .expect("filtered codebase_search should succeed");
+
+    let structured = result
+        .structured_content
+        .expect("structured_content should be present");
+    let results = structured
+        .get("results")
+        .and_then(|value| value.as_array())
+        .expect("results array");
+
+    assert!(!results.is_empty());
+    assert!(results.iter().all(|result| {
+        let path = result
+            .get("path")
+            .and_then(|value| value.as_str())
+            .unwrap_or_default();
+        path.ends_with(".ts") && path.contains("src/auth") && !path.contains("test")
+    }));
+    assert!(results.iter().any(|result| {
+        result.get("path").and_then(|value| value.as_str()) == Some("src/auth/login.ts")
+    }));
+    assert!(results.iter().all(|result| result.get("snippet").is_none()));
+}
