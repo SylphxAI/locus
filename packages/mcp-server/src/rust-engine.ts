@@ -21,6 +21,7 @@ export type RustSearchEnvelope = {
 		}>
 		startLine?: number
 		endLine?: number
+		matchedLines?: number[]
 		snippet?: string
 		symbolName?: string
 		chunkType?: string
@@ -34,6 +35,8 @@ export type RustSearchEnvelope = {
 	}
 	code?: string
 	message?: string
+	warnings?: string[]
+	gaps?: string[]
 }
 
 function hostPlatformKey(): string {

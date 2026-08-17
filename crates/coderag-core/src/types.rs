@@ -23,6 +23,8 @@ pub struct SearchHit {
     pub score_components: Vec<ScoreComponent>,
     pub start_line: Option<u32>,
     pub end_line: Option<u32>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub matched_lines: Vec<u32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub snippet: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -65,10 +67,23 @@ pub struct ToolEnvelope {
     pub code: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub warnings: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub gaps: Vec<String>,
 }
 
 impl ToolEnvelope {
     pub fn ok_search(query: &str, results: Vec<SearchHit>, elapsed_ms: u64) -> Self {
+        Self::ok_search_with_gaps(query, results, elapsed_ms, Vec::new())
+    }
+
+    pub fn ok_search_with_gaps(
+        query: &str,
+        results: Vec<SearchHit>,
+        elapsed_ms: u64,
+        gaps: Vec<String>,
+    ) -> Self {
         Self {
             status: "ok".into(),
             query: Some(query.into()),
@@ -80,10 +95,16 @@ impl ToolEnvelope {
             }),
             code: None,
             message: None,
+            warnings: Vec::new(),
+            gaps,
         }
     }
 
     pub fn ok_index(stats: IndexStats) -> Self {
+        Self::ok_index_with_gaps(stats, Vec::new())
+    }
+
+    pub fn ok_index_with_gaps(stats: IndexStats, gaps: Vec<String>) -> Self {
         Self {
             status: "ok".into(),
             query: None,
@@ -92,6 +113,8 @@ impl ToolEnvelope {
             search: None,
             code: None,
             message: None,
+            warnings: Vec::new(),
+            gaps,
         }
     }
 
@@ -104,6 +127,8 @@ impl ToolEnvelope {
             search: None,
             code: Some(code.into()),
             message: Some(message.into()),
+            warnings: Vec::new(),
+            gaps: Vec::new(),
         }
     }
 }

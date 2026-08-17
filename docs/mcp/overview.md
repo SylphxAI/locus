@@ -11,15 +11,15 @@ MCP uses a client-server architecture where:
 
 ## What is CodeRAG MCP?
 
-CodeRAG MCP (`@sylphx/locus`) is an MCP server that provides intelligent codebase search capabilities to AI assistants. It enables AI to search and understand your codebase using hybrid TF-IDF and optional vector embeddings.
+Locus (`@sylphx/locus`) is an MCP server that provides deterministic local codebase search to AI assistants. Its shipped Rust route uses code-aware TF-IDF retrieval and returns verifiable file, symbol, and line locators.
 
 **Key Benefits:**
 
-- **Zero Dependencies**: No Docker, no databases, no external services required
-- **Fast**: <50ms search latency, instant startup with cached index
-- **Offline**: Works entirely offline (except optional vector search)
-- **Smart**: Hybrid TF-IDF + optional OpenAI embeddings for semantic understanding
-- **Automatic**: Auto-indexes on startup, watches for file changes
+- **Local-first**: No Docker, database service, or embedding credential is required
+- **Deterministic**: The same admitted root and query use the Rust TF-IDF route
+- **Offline**: Search does not call a remote provider
+- **Verifiable**: Results carry chunk ranges, exact matched lines when available, and symbol provenance
+- **Recoverable**: Invalid admission and unreadable-source failures are explicit
 
 ## How CodeRAG MCP Works
 
@@ -40,40 +40,35 @@ CodeRAG MCP runs as a background process that your AI assistant communicates wit
 └────────┬────────┘
          │
 ┌────────▼────────┐
-│   .coderag/     │  SQLite index cache
-│   index.db      │
+│   .coderag/     │  Local Rust index snapshot
+│ rust-index.json │
 └─────────────────┘
 ```
 
 **Workflow:**
 
-1. **Startup**: Server indexes your codebase on first run (1000-2000 files/sec)
-2. **Caching**: Index stored in `.coderag/` folder for instant subsequent startups
-3. **Watching**: Automatically detects file changes and updates index incrementally
-4. **Search**: AI calls `codebase_search` tool with natural language or keyword queries
-5. **Results**: Server returns ranked code snippets in LLM-optimized markdown format
+1. **Admission**: The request must name an existing readable repository directory and a non-empty query.
+2. **Refresh**: The Rust engine builds or incrementally refreshes `.coderag/rust-index.json`.
+3. **Search**: The MCP client calls `codebase_search` with a bounded limit and optional path filters.
+4. **Results**: The server returns structured ranked hits with file/symbol/chunk locators and explicit gaps.
 
 ## Available Tool: codebase_search
 
 CodeRAG MCP provides a single tool: `codebase_search`
 
-**Search Modes:**
+**Search mode:**
 
-1. **Keyword Search** (default): TF-IDF ranking with code-aware tokenization
-   - Use specific terms, function names, error messages
-   - Example: "getUserById authentication"
-
-2. **Semantic Search** (with OPENAI_API_KEY): AI embeddings + TF-IDF fusion
-   - Use natural language descriptions
-   - Example: "code that handles user login with JWT tokens"
+- **Keyword search**: deterministic TF-IDF ranking with code-aware tokenization.
+  Use specific identifiers, function names, or error terms such as
+  `getUserById authentication`.
 
 **Key Features:**
 
-- **Fast Ranking**: Hybrid TF-IDF with StarCoder2 tokenizer (4.7MB, trained on code)
+- **Fast Ranking**: Rust TF-IDF with code-aware tokenization
 - **Smart Filtering**: Filter by file extension, path pattern, or exclude paths
-- **Context-Aware**: Returns code snippets with line numbers and syntax highlighting
-- **AST Chunking**: Splits code at semantic boundaries (functions, classes, etc.)
-- **LLM-Optimized Output**: Minimal token usage, maximum content density
+- **Evidence-Aware**: Returns chunk ranges, exact matched lines, symbol names, and scores
+- **Chunking**: Splits supported source at recognized function/class/const boundaries
+- **Structured Output**: `status`, `results`, `warnings`, and `gaps` remain machine-readable
 
 ## Use Cases with AI Assistants
 
@@ -109,29 +104,13 @@ AI: Uses codebase_search("validation schema") to find all validation code
 AI: Creates utility and updates references
 ```
 
-## Performance Characteristics
+## Indexed files
 
-| Metric | Value |
-|--------|-------|
-| Initial indexing | 1000-2000 files/sec |
-| Startup with cache | <100ms |
-| Search latency | <50ms |
-| Memory per 1000 files | ~1-2 MB |
-| Tokenizer size | 4.7MB (StarCoder2) |
-
-## Supported Languages
-
-AST-based chunking with semantic boundary detection:
-
-| Category | Languages |
-|----------|-----------|
-| **JavaScript** | JavaScript, TypeScript, JSX, TSX |
-| **Systems** | Python, Go, Java, C, Rust |
-| **Markup** | Markdown, HTML, XML |
-| **Data/Config** | JSON, YAML, TOML, INI |
-| **Other** | Protobuf |
-
-**Embedded Code Support**: Automatically parses code blocks in Markdown files and `<script>`/`<style>` tags in HTML.
+The Rust route currently indexes TypeScript/TSX, JavaScript, Rust, and Markdown
+files. It excludes `node_modules`, `dist`, `target`, `.git`, and its own
+`.coderag` metadata. Unsupported files are not presented as searchable content;
+an empty or unsupported-only repository is reported through the response
+`gaps` array.
 
 ## Next Steps
 

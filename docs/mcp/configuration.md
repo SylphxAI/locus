@@ -1,509 +1,82 @@
-# Configuration Guide
+# Configuration
 
-This guide covers how to configure CodeRAG MCP for different AI assistants and use cases.
+Locus has one search contract and one Rust retrieval route. Configure the
+repository boundary and transport; query behavior belongs in the
+[`codebase_search` tool contract](./tools.md).
 
-## Claude Desktop Configuration
+## Repository root
 
-Claude Desktop is Anthropic's official desktop application for Claude AI.
-
-### Configuration File Location
-
-**macOS:**
-```
-~/Library/Application Support/Claude/claude_desktop_config.json
-```
-
-**Windows:**
-```
-%APPDATA%\Claude\claude_desktop_config.json
-```
-
-**Linux:**
-```
-~/.config/Claude/claude_desktop_config.json
-```
-
-### Basic Configuration
-
-Edit `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/project"]
-    }
-  }
-}
-```
-
-Replace `/path/to/project` with your project's absolute path.
-
-### With Semantic Search
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/project"],
-      "env": {
-        "OPENAI_API_KEY": "sk-..."
-      }
-    }
-  }
-}
-```
-
-### Advanced Configuration
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@sylphx/locus",
-        "--root=/path/to/project",
-        "--max-size=2097152"
-      ],
-      "env": {
-        "OPENAI_API_KEY": "sk-...",
-        "EMBEDDING_MODEL": "text-embedding-3-large"
-      }
-    }
-  }
-}
-```
-
-### Applying Changes
-
-1. Save `claude_desktop_config.json`
-2. Quit Claude Desktop completely
-3. Restart Claude Desktop
-4. Server starts automatically on first tool use
-
-## Cursor Configuration
-
-Cursor is an AI-powered code editor built on VS Code.
-
-### Configuration File Location
-
-**macOS:**
-```
-~/.cursor/mcp.json
-```
-
-**Windows:**
-```
-%USERPROFILE%\.cursor\mcp.json
-```
-
-**Linux:**
-```
-~/.cursor/mcp.json
-```
-
-### Basic Configuration
-
-Create or edit `~/.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/project"]
-    }
-  }
-}
-```
-
-### Workspace-Relative Path
-
-Use current workspace folder:
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=${workspaceFolder}"]
-    }
-  }
-}
-```
-
-Note: `${workspaceFolder}` support depends on Cursor's MCP implementation. If unsupported, use absolute paths.
-
-### Applying Changes
-
-1. Save `mcp.json`
-2. Restart Cursor
-3. Server starts when MCP client initializes
-
-## VS Code Configuration
-
-VS Code supports MCP through extensions like Continue.
-
-### Using Continue Extension
-
-Install the [Continue extension](https://marketplace.visualstudio.com/items?itemName=Continue.continue) from VS Code Marketplace.
-
-**Configuration File Location:**
-
-**macOS/Linux:**
-```
-~/.continue/config.json
-```
-
-**Windows:**
-```
-%USERPROFILE%\.continue\config.json
-```
-
-Edit `config.json` to add MCP servers:
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=${workspaceFolder}"]
-    }
-  }
-}
-```
-
-### Workspace Configuration
-
-Create `.vscode/mcp.json` in your project:
-
-```json
-{
-  "mcp": {
-    "servers": {
-      "coderag": {
-        "command": "npx",
-        "args": ["-y", "@sylphx/locus", "--root=${workspaceFolder}"]
-      }
-    }
-  }
-}
-```
-
-This configuration is project-specific and checked into version control.
-
-### Applying Changes
-
-1. Save configuration file
-2. Reload VS Code window (Cmd/Ctrl+R)
-3. Continue extension loads MCP servers automatically
-
-## Windsurf Configuration
-
-Windsurf is an AI-powered development environment.
-
-### Configuration File Location
-
-**macOS:**
-```
-~/.codeium/windsurf/mcp_config.json
-```
-
-**Windows:**
-```
-%USERPROFILE%\.codeium\windsurf\mcp_config.json
-```
-
-**Linux:**
-```
-~/.codeium/windsurf/mcp_config.json
-```
-
-### Basic Configuration
-
-Create or edit `mcp_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/project"]
-    }
-  }
-}
-```
-
-### Applying Changes
-
-1. Save `mcp_config.json`
-2. Restart Windsurf
-3. Server initializes on startup
-
-## Multiple Project Setup
-
-Configure multiple CodeRAG instances for different projects.
-
-### Separate Servers per Project
-
-```json
-{
-  "mcpServers": {
-    "coderag-frontend": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/frontend"]
-    },
-    "coderag-backend": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/backend"]
-    },
-    "coderag-mobile": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/mobile"]
-    }
-  }
-}
-```
-
-**Benefits:**
-- Separate indexes for faster search
-- Different configurations per project
-- AI can specify which project to search
-
-**Usage:**
-```
-Human: "Search the frontend codebase for authentication components"
-AI: Uses coderag-frontend server
-```
-
-### Monorepo Configuration
-
-For monorepos, index the entire repository:
-
-```json
-{
-  "mcpServers": {
-    "coderag-monorepo": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/monorepo"]
-    }
-  }
-}
-```
-
-Use path filters in search queries:
-
-```json
-{
-  "query": "authentication",
-  "path_filter": "packages/frontend"
-}
-```
-
-## Environment-Specific Configuration
-
-### Development Environment
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/project"],
-      "env": {
-        "OPENAI_API_KEY": "sk-dev-key"
-      }
-    }
-  }
-}
-```
-
-### Production Environment
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "/usr/local/bin/locus",
-      "args": [
-        "--root=/var/www/project",
-        "--max-size=5242880",
-        "--no-auto-index"
-      ],
-      "env": {
-        "OPENAI_API_KEY": "sk-prod-key",
-        "EMBEDDING_MODEL": "text-embedding-3-large"
-      }
-    }
-  }
-}
-```
-
-## Custom Embedding Providers
-
-### OpenRouter
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/project"],
-      "env": {
-        "OPENAI_API_KEY": "sk-or-v1-...",
-        "OPENAI_BASE_URL": "https://openrouter.ai/api/v1"
-      }
-    }
-  }
-}
-```
-
-### Together AI
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/project"],
-      "env": {
-        "OPENAI_API_KEY": "your-together-api-key",
-        "OPENAI_BASE_URL": "https://api.together.xyz/v1",
-        "EMBEDDING_MODEL": "togethercomputer/m2-bert-80M-8k-retrieval",
-        "EMBEDDING_DIMENSIONS": "768"
-      }
-    }
-  }
-}
-```
-
-### Azure OpenAI
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/project"],
-      "env": {
-        "OPENAI_API_KEY": "your-azure-key",
-        "OPENAI_BASE_URL": "https://your-resource.openai.azure.com/openai/deployments/your-deployment",
-        "EMBEDDING_MODEL": "text-embedding-3-small"
-      }
-    }
-  }
-}
-```
-
-## Performance Tuning
-
-### Large Codebases
-
-For projects with 10,000+ files:
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@sylphx/locus",
-        "--root=/path/to/large-project",
-        "--max-size=524288"
-      ]
-    }
-  }
-}
-```
-
-**Tips:**
-- Reduce `--max-size` to skip large generated files
-- Exclude build directories (handled automatically)
-- First indexing takes longer, subsequent startups are fast (<100ms)
-
-### Resource-Constrained Environments
-
-For limited memory or CPU:
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@sylphx/locus",
-        "--root=/path/to/project",
-        "--max-size=262144"
-      ]
-    }
-  }
-}
-```
-
-**Settings:**
-- Lower `--max-size` (256 KB)
-- Use keyword search only (no OPENAI_API_KEY)
-- Index is stored in SQLite for low memory usage
-
-## Configuration Validation
-
-### Check Configuration Syntax
-
-Ensure your JSON configuration is valid:
+Pass the root on the launcher command:
 
 ```bash
-# macOS/Linux
-cat ~/Library/Application\ Support/Claude/claude_desktop_config.json | python -m json.tool
-
-# Windows PowerShell
-Get-Content $env:APPDATA\Claude\claude_desktop_config.json | ConvertFrom-Json
+npx -y @sylphx/locus --root=/absolute/path/to/project
 ```
 
-### Test Server Manually
+The native launcher accepts `--root=/path` and `--root /path` and exports the
+value as `CODERAG_ROOT`. A client may also pass `root` in each tool call. The
+engine rejects a missing, nonexistent, unreadable, or non-directory root.
 
-Test CodeRAG MCP outside of your AI assistant:
+## Stdio (default)
+
+Most desktop clients need no environment variables:
+
+```json
+{
+  "mcpServers": {
+    "locus": {
+      "command": "npx",
+      "args": ["-y", "@sylphx/locus", "--root=/absolute/path/to/project"]
+    }
+  }
+}
+```
+
+If the client owns the repository selection, omit `--root` and provide
+`CODERAG_ROOT` or `root` in the request instead.
+
+## Streamable HTTP
+
+Set `MCP_TRANSPORT=http` (or `CODERAG_MCP_TRANSPORT=http`) to serve `/mcp` and
+`/mcp/health`:
 
 ```bash
-npx @sylphx/locus --root=/path/to/project
+MCP_TRANSPORT=http \
+CODERAG_ROOT=/absolute/path/to/project \
+MCP_HTTP_HOST=127.0.0.1 \
+MCP_HTTP_PORT=8080 \
+npx -y @sylphx/locus
 ```
 
-You should see:
-```
-[INFO] Starting MCP Codebase Search Server...
-[INFO] Codebase root: /path/to/project
-[INFO] Max file size: 1.00 MB
-[INFO] Auto-index: enabled
-[SUCCESS] Indexed 1234 files
-[INFO] Watching for file changes...
-```
+Supported HTTP settings:
 
-Press Ctrl+C to stop.
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `MCP_HTTP_HOST` / `CODERAG_MCP_HTTP_HOST` | `127.0.0.1` | Bind address. |
+| `MCP_HTTP_PORT` / `CODERAG_MCP_HTTP_PORT` | `8080` | Bind port. |
+| `MCP_API_KEY` / `CODERAG_MCP_API_KEY` | unset | Optional key for protected HTTP calls. |
+| `MCP_CORS_ORIGIN` / `CODERAG_MCP_CORS_ORIGIN` | unset | Optional explicit CORS origin. |
 
-## Troubleshooting
+Keep HTTP on loopback unless the deployment owner has supplied an authenticated
+network boundary. Never commit keys or repository credentials.
 
-**Configuration not loading:**
-- Verify JSON syntax (no trailing commas, proper quotes)
-- Check file path is correct for your OS
-- Restart AI assistant after changes
+## Index behavior
 
-**Server not starting:**
-- Test command manually in terminal
-- Check Node.js is installed (`node --version`)
-- Verify `--root` path exists
+The Rust engine persists its local snapshot under `.coderag/rust-index.json` and
+refreshes it before a public search. Supported files are TypeScript/TSX,
+JavaScript, Rust, and Markdown; `node_modules`, `dist`, `target`, `.git`, and
+Locus's own `.coderag` metadata are excluded. Unsupported files are not
+silently searched by another engine.
 
-**Multiple servers conflict:**
-- Give each server a unique name
-- Ensure different `--root` paths
-- Check logs for port conflicts
+`gaps` in a successful response records an admitted but incomplete search state,
+such as `empty_root` or `no_searchable_files`. Read and persistence failures are
+returned as explicit error codes; repair the owning filesystem issue and retry.
 
-## Next Steps
+## Client configuration checklist
 
-- [Tools Reference](./tools.md) - Learn about codebase_search parameters
-- [IDE Integration](./ide-integration.md) - Detailed setup for specific IDEs
-- [Installation Guide](./installation.md) - CLI arguments and environment variables
+1. Use the canonical `@sylphx/locus` package and `locus` server name.
+2. Pin one repository root per server entry.
+3. Call `codebase_search` with a concrete non-empty query and `limit` in `1..=100`.
+4. Preserve `path`, `startLine`/`endLine`, `matchedLines`, `symbolName`, and
+   `gaps` when handing results to a consumer.
+
+For client-specific JSON, see [IDE integration](./ide-integration.md).

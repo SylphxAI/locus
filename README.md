@@ -122,6 +122,7 @@ Search with the `codebase_search` tool:
 
 ```json
 {
+  "root": "/absolute/path/to/project",
   "query": "user authentication login",
   "limit": 5,
   "file_extensions": [".ts", ".tsx"],
@@ -129,18 +130,20 @@ Search with the `codebase_search` tool:
 }
 ```
 
-Returns ranked chunks — not entire files:
+Returns ranked chunks with file, symbol, and line evidence:
 
-```markdown
-# Search: "user authentication login" (3 results)
-
-## src/auth/login.ts:1-12
-```typescript
-export async function authenticate(username: string, password: string) {
-  const user = await findUserByEmail(username)
-  return validatePassword(user, password)
+```json
+{
+  "status": "ok",
+  "results": [{
+    "path": "src/auth/login.ts",
+    "startLine": 1,
+    "endLine": 12,
+    "matchedLines": [1, 3],
+    "symbolName": "authenticate",
+    "chunkType": "function"
+  }]
 }
-```
 ```
 
 ## Why agents use it
@@ -148,8 +151,8 @@ export async function authenticate(username: string, password: string) {
 | Need | What you get |
 | --- | --- |
 | Find implementation | AST chunks at semantic boundaries (functions, classes, methods) |
-| Keyword + meaning | Hybrid TF-IDF with optional OpenAI embeddings |
-| Fast iteration | Local index, incremental updates, file watching |
+| Keyword discovery | Deterministic Rust TF-IDF with score evidence |
+| Fast iteration | Local index refresh with persisted snapshots |
 | Low setup | MCP server via `npx` — no Docker or ChromaDB required |
 | Ship with proof | ~200 tests, reproducible public benchmark script |
 
@@ -208,12 +211,18 @@ const results = await indexer.search('authentication logic', { limit: 10 })
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
+| `root` | string | `CODERAG_ROOT` | Existing repository directory |
 | `query` | string | — | Search query (required) |
 | `limit` | number | 10 | Max results |
 | `include_content` | boolean | true | Include code snippets |
 | `file_extensions` | string[] | — | Filter by extension |
 | `path_filter` | string | — | Filter by path pattern |
 | `exclude_paths` | string[] | — | Exclude paths |
+
+Results include `path`, chunk `startLine`/`endLine`, exact `matchedLines` when
+available, and optional `symbolName`/`snippet` fields. Empty or invalid input is
+rejected at the engine boundary; unreadable source is reported as an index
+error rather than returned as a false match.
 
 Full tool reference: [docs/mcp/tools.md](docs/mcp/tools.md).
 
@@ -265,7 +274,7 @@ results.
 - **Root confinement** — `--root` pins indexing and search to one repository tree.
 - **Exclude paths** — `exclude_paths` and default ignores skip `node_modules`, build output, and VCS metadata.
 - **Local-first** — TF-IDF indexing runs on your machine; embeddings are optional and caller-configured.
-- **Evidence fields** — results include file path, line range, symbol, score route, and index freshness for verification.
+- **Evidence fields** — results include file path, chunk and exact matched line ranges, symbol, score route, and index gaps for verification.
 
 Example MCP request: [`examples/codebase-search-request.json`](examples/codebase-search-request.json).
 

@@ -35,9 +35,11 @@ pub struct SearchIndex {
     pub chunks: Vec<Chunk>,
     pub doc_freq: HashMap<String, usize>,
     pub avg_doc_len: f64,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub gaps: Vec<String>,
 }
 
-const DEFAULT_EXCLUDES: &[&str] = &["node_modules", "dist", "target", ".git"];
+const DEFAULT_EXCLUDES: &[&str] = &["node_modules", "dist", "target", ".git", ".coderag"];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum IndexMode {
@@ -72,6 +74,29 @@ impl Default for SearchOptions {
     }
 }
 
+impl SearchOptions {
+    pub fn validate(&self) -> Result<(), String> {
+        if self
+            .file_extensions
+            .iter()
+            .any(|extension| extension.trim().is_empty())
+        {
+            return Err("file_extensions must not contain empty values".into());
+        }
+        if self
+            .path_filter
+            .as_deref()
+            .is_some_and(|filter| filter.trim().is_empty())
+        {
+            return Err("path_filter must not be empty".into());
+        }
+        if self.exclude_paths.iter().any(|path| path.trim().is_empty()) {
+            return Err("exclude_paths must not contain empty values".into());
+        }
+        Ok(())
+    }
+}
+
 impl IndexMode {
     pub fn parse(value: &str) -> Self {
         match value {
@@ -91,18 +116,19 @@ pub fn refresh_index(
     }
 
     let started = Instant::now();
-    let canonical = root
-        .canonicalize()
-        .map_err(|e| format!("INVALID_ROOT: {e}"))?;
+    let canonical = canonical_root(root)?;
     let inventory = inventory_files(&canonical, max_file_bytes)?;
 
     if let (Ok(index), Ok(stored)) = (load_index(&canonical), load_file_hashes(&canonical)) {
         if stored.file_hashes == inventory {
+            let mut index = index.clone();
+            ensure_index_gaps(&mut index);
+            let chunks_indexed = index.chunks.len();
             return Ok((
-                index.clone(),
+                index,
                 IndexStats {
                     files_scanned: inventory.len(),
-                    chunks_indexed: index.chunks.len(),
+                    chunks_indexed,
                     elapsed_ms: started.elapsed().as_millis() as u64,
                     refresh_mode: "cache_hit".into(),
                     files_changed: 0,
@@ -133,17 +159,17 @@ pub fn refresh_index(
         let files_removed = removed.len();
         let affected: HashSet<String> = changed.union(&removed).cloned().collect();
         let mut index = index;
-        index
-            .chunks
-            .retain(|chunk| !affected.contains(&chunk.path));
+        index.chunks.retain(|chunk| !affected.contains(&chunk.path));
 
         for path in &changed {
             let file_path = canonical.join(path);
-            let content = fs::read_to_string(&file_path).unwrap_or_default();
+            let content = fs::read_to_string(&file_path)
+                .map_err(|error| format!("INDEX_READ_FAILED: {}: {error}", file_path.display()))?;
             index.chunks.extend(chunk_file(path, &content));
         }
 
         rebuild_doc_freq(&mut index);
+        ensure_index_gaps(&mut index);
         let chunks_indexed = index.chunks.len();
 
         let manifest = FileHashManifest {
@@ -170,10 +196,14 @@ pub fn refresh_index(
     build_index(root, max_file_bytes)
 }
 
-pub fn inventory_files(root: &Path, max_file_bytes: u64) -> Result<HashMap<String, String>, String> {
+pub fn inventory_files(
+    root: &Path,
+    max_file_bytes: u64,
+) -> Result<HashMap<String, String>, String> {
     let mut inventory = HashMap::new();
 
-    for entry in WalkDir::new(root).into_iter().filter_map(Result::ok) {
+    for entry in WalkDir::new(root).into_iter() {
+        let entry = entry.map_err(|error| format!("INDEX_SCAN_FAILED: {error}"))?;
         let path = entry.path();
         if path.is_dir() {
             continue;
@@ -183,10 +213,10 @@ pub fn inventory_files(root: &Path, max_file_bytes: u64) -> Result<HashMap<Strin
         if should_skip(&rel_str) || !is_indexable_extension(&rel_str) {
             continue;
         }
-        if let Ok(meta) = fs::metadata(path) {
-            if meta.len() > max_file_bytes {
-                continue;
-            }
+        let meta = fs::metadata(path)
+            .map_err(|error| format!("INDEX_METADATA_FAILED: {}: {error}", path.display()))?;
+        if meta.len() > max_file_bytes {
+            continue;
         }
         let hash = hash_file_bytes(path)?;
         inventory.insert(rel_str, hash);
@@ -221,16 +251,16 @@ fn rebuild_doc_freq(index: &mut SearchIndex) {
 
 pub fn build_index(root: &Path, max_file_bytes: u64) -> Result<(SearchIndex, IndexStats), String> {
     let started = Instant::now();
-    let root = root
-        .canonicalize()
-        .map_err(|e| format!("INVALID_ROOT: {e}"))?;
+    let root = canonical_root(root)?;
     let mut index = SearchIndex {
         root: root.to_string_lossy().to_string(),
         ..Default::default()
     };
     let mut files_scanned = 0usize;
+    let mut files_seen = 0usize;
 
-    for entry in WalkDir::new(&root).into_iter().filter_map(Result::ok) {
+    for entry in WalkDir::new(&root).into_iter() {
+        let entry = entry.map_err(|error| format!("INDEX_SCAN_FAILED: {error}"))?;
         let path = entry.path();
         if path.is_dir() {
             continue;
@@ -240,16 +270,18 @@ pub fn build_index(root: &Path, max_file_bytes: u64) -> Result<(SearchIndex, Ind
         if should_skip(&rel_str) {
             continue;
         }
+        files_seen += 1;
         if !is_indexable_extension(&rel_str) {
             continue;
         }
-        if let Ok(meta) = fs::metadata(path) {
-            if meta.len() > max_file_bytes {
-                continue;
-            }
+        let meta = fs::metadata(path)
+            .map_err(|error| format!("INDEX_METADATA_FAILED: {}: {error}", path.display()))?;
+        if meta.len() > max_file_bytes {
+            continue;
         }
         files_scanned += 1;
-        let content = fs::read_to_string(path).unwrap_or_default();
+        let content = fs::read_to_string(path)
+            .map_err(|error| format!("INDEX_READ_FAILED: {}: {error}", path.display()))?;
         index.chunks.extend(chunk_file(&rel_str, &content));
     }
 
@@ -265,6 +297,14 @@ pub fn build_index(root: &Path, max_file_bytes: u64) -> Result<(SearchIndex, Ind
     } else {
         total_len as f64 / index.chunks.len() as f64
     };
+
+    if files_scanned == 0 {
+        index.gaps.push(if files_seen == 0 {
+            "empty_root".into()
+        } else {
+            "no_searchable_files".into()
+        });
+    }
 
     let chunks_indexed = index.chunks.len();
     let inventory = inventory_files(&root, max_file_bytes)?;
@@ -291,6 +331,31 @@ pub fn build_index(root: &Path, max_file_bytes: u64) -> Result<(SearchIndex, Ind
 
 fn should_skip(rel: &str) -> bool {
     rel.split('/').any(|part| DEFAULT_EXCLUDES.contains(&part))
+}
+
+pub fn canonical_root(root: &Path) -> Result<PathBuf, String> {
+    let canonical = root
+        .canonicalize()
+        .map_err(|error| format!("INVALID_ROOT: {error}"))?;
+    if !canonical.is_dir() {
+        return Err(format!(
+            "INVALID_ROOT: {} is not a directory",
+            canonical.display()
+        ));
+    }
+    Ok(canonical)
+}
+
+pub(crate) fn ensure_index_gaps(index: &mut SearchIndex) {
+    if index.chunks.is_empty() {
+        if index.gaps.is_empty() {
+            index.gaps.push("empty_root".into());
+        }
+    } else {
+        index
+            .gaps
+            .retain(|gap| gap != "empty_root" && gap != "no_searchable_files");
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -320,7 +385,13 @@ fn chunk_file(path: &str, content: &str) -> Vec<Chunk> {
 
     let preamble: String = lines
         .iter()
-        .take(spans.first().map(|span| span.start_line as usize).unwrap_or(1).saturating_sub(1))
+        .take(
+            spans
+                .first()
+                .map(|span| span.start_line as usize)
+                .unwrap_or(1)
+                .saturating_sub(1),
+        )
         .copied()
         .collect::<Vec<_>>()
         .join("\n");
@@ -404,7 +475,11 @@ fn extract_symbol_spans(content: &str) -> Vec<SymbolSpan> {
     spans
 }
 
-pub fn search_index(index: &SearchIndex, query: &str, limit: usize) -> Vec<crate::types::SearchHit> {
+pub fn search_index(
+    index: &SearchIndex,
+    query: &str,
+    limit: usize,
+) -> Vec<crate::types::SearchHit> {
     search_index_with_options(index, query, limit, &SearchOptions::default())
 }
 
@@ -460,6 +535,18 @@ pub fn search_index_with_options(
         }
 
         if score > 0.0 {
+            let matched_lines = chunk
+                .text
+                .lines()
+                .enumerate()
+                .filter_map(|(offset, line)| {
+                    let line_terms = tokenize(line);
+                    query_terms
+                        .iter()
+                        .any(|term| line_terms.iter().any(|line_term| line_term == term))
+                        .then_some(chunk_text_line_number(chunk, offset as u32))
+                })
+                .collect();
             scored.push(crate::types::SearchHit {
                 path: chunk.path.clone(),
                 score,
@@ -467,6 +554,7 @@ pub fn search_index_with_options(
                 score_components,
                 start_line: Some(chunk.start_line),
                 end_line: Some(chunk.end_line),
+                matched_lines,
                 snippet: options.include_content.then(|| chunk.text.clone()),
                 symbol_name: chunk.symbol_name.clone(),
                 chunk_type: Some(chunk.chunk_type.clone()),
@@ -474,7 +562,11 @@ pub fn search_index_with_options(
         }
     }
 
-    scored.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal));
+    scored.sort_by(|a, b| {
+        b.score
+            .partial_cmp(&a.score)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     scored.truncate(limit);
     scored
 }
@@ -499,6 +591,15 @@ fn matches_filters(path: &str, options: &SearchOptions) -> bool {
         .exclude_paths
         .iter()
         .any(|exclude| path.contains(exclude))
+}
+
+fn chunk_text_line_number(chunk: &Chunk, offset: u32) -> u32 {
+    let preamble_lines = chunk.start_line.saturating_sub(1);
+    if preamble_lines > 0 && offset < preamble_lines {
+        offset + 1
+    } else {
+        chunk.start_line + offset.saturating_sub(preamble_lines)
+    }
 }
 
 #[cfg(test)]
@@ -563,15 +664,79 @@ mod tests {
     #[test]
     fn default_search_options_keep_existing_results_and_content() {
         let index = fixture_index();
-        let hits = search_index_with_options(
-            &index,
-            "authenticate",
-            10,
-            &SearchOptions::default(),
-        );
+        let hits = search_index_with_options(&index, "authenticate", 10, &SearchOptions::default());
 
         assert_eq!(hits.len(), 3);
         assert!(hits.iter().all(|hit| hit.snippet.is_some()));
+    }
+
+    #[test]
+    fn search_hits_report_exact_matched_lines() {
+        let index = fixture_index();
+        let hits = search_index_with_options(&index, "authenticate", 10, &SearchOptions::default());
+
+        let login = hits
+            .iter()
+            .find(|hit| hit.path == "src/auth/login.ts")
+            .expect("login hit");
+        assert_eq!(login.matched_lines, vec![1]);
+    }
+
+    #[test]
+    fn symbol_chunk_locators_account_for_preamble_lines() {
+        let root =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../fixtures/benchmark-corpus");
+        let (index, _) = build_index(&root, 1_048_576).expect("fixture index");
+        let hits = search_index_with_options(&index, "crypto", 10, &SearchOptions::default());
+
+        let session = hits
+            .iter()
+            .find(|hit| {
+                hit.path == "src/auth/session.ts"
+                    && hit.symbol_name.as_deref() == Some("createSession")
+            })
+            .expect("createSession hit");
+        assert_eq!(session.matched_lines, vec![9]);
+    }
+
+    #[test]
+    fn search_options_reject_empty_filters() {
+        let options = SearchOptions {
+            path_filter: Some("  ".into()),
+            ..SearchOptions::default()
+        };
+        assert!(options.validate().is_err());
+
+        let options = SearchOptions {
+            exclude_paths: vec![String::new()],
+            ..SearchOptions::default()
+        };
+        assert!(options.validate().is_err());
+    }
+
+    #[test]
+    fn invalid_utf8_is_an_explicit_index_error() {
+        let root =
+            std::env::temp_dir().join(format!("coderag-core-invalid-utf8-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("temp root");
+        fs::write(root.join("broken.ts"), [0xff, 0xfe, 0xfd]).expect("invalid source");
+
+        let error = build_index(&root, 1_048_576).expect_err("invalid UTF-8 must not be indexed");
+        assert!(error.starts_with("INDEX_READ_FAILED"));
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn empty_root_reports_a_search_gap() {
+        let root =
+            std::env::temp_dir().join(format!("coderag-core-empty-root-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).expect("temp root");
+
+        let (index, _) = build_index(&root, 1_048_576).expect("empty root is valid");
+        assert_eq!(index.gaps, vec!["empty_root"]);
+        let _ = fs::remove_dir_all(root);
     }
 }
 

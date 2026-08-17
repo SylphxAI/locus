@@ -13,19 +13,21 @@ use serde_json::json;
 
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct CodebaseSearchRequest {
-    #[schemars(description = "Repository root path; defaults to CODERAG_ROOT when omitted")]
+    #[schemars(
+        description = "Existing readable repository directory; defaults to CODERAG_ROOT when omitted"
+    )]
     pub root: Option<String>,
-    #[schemars(description = "Search query")]
+    #[schemars(description = "Non-empty search query")]
     pub query: String,
-    #[schemars(description = "Maximum number of results")]
+    #[schemars(description = "Maximum number of results, from 1 through 100")]
     pub limit: Option<u64>,
     #[schemars(description = "Include code snippets in results; defaults to true")]
     pub include_content: Option<bool>,
-    #[schemars(description = "Only return paths ending with one of these extensions")]
+    #[schemars(description = "Only return paths ending with non-empty extension values")]
     pub file_extensions: Option<Vec<String>>,
-    #[schemars(description = "Only return paths containing this substring")]
+    #[schemars(description = "Only return paths containing this non-empty substring")]
     pub path_filter: Option<String>,
-    #[schemars(description = "Exclude paths containing any of these substrings")]
+    #[schemars(description = "Exclude paths containing these non-empty substrings")]
     pub exclude_paths: Option<Vec<String>>,
 }
 
@@ -106,8 +108,8 @@ mod tests {
 
     #[test]
     fn server_info_is_brand_sole_locus() {
-        use rmcp::ServerHandler;
         use crate::{SERVER_NAME, SERVER_VERSION};
+        use rmcp::ServerHandler;
         let info = CoderagMcp::new().get_info();
         let name = info.server_info.name.to_string();
         let version = info.server_info.version.to_string();
@@ -116,7 +118,6 @@ mod tests {
         assert_eq!(SERVER_NAME, "locus");
         assert!(!name.contains("coderag"));
     }
-
 
     #[test]
     fn codebase_search_request_schema_is_generated_for_rmcp_tool() {

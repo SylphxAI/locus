@@ -1572,6 +1572,8 @@ export interface SearchResult {
 	snippet?: string
 	// Chunk metadata (when using chunk-level search)
 	chunkType?: string
+	symbolName?: string
 	startLine?: number
 	endLine?: number
+	matchedLines?: number[]
 }

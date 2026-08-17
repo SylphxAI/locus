@@ -1,293 +1,77 @@
 # Installation
 
-## Zero-config
+Locus is a local Rust MCP server. Point one process at one repository and let
+the client call `codebase_search`.
+
+## Zero-config client setup
 
 ```bash
 npx -y @sylphx/locus --root=/absolute/path/to/project
 ```
 
-Guide
+The native launcher accepts both `--root=/absolute/path/to/project` and
+`--root /absolute/path/to/project`, then supplies that directory as the server's
+`CODERAG_ROOT`. A request may also pass `root` explicitly when a client manages
+multiple repositories.
 
-## Quick Start with npx
+The root must exist and be a readable directory. Locus indexes supported source
+files into `.coderag/rust-index.json`; it does not require Docker, a database
+service, or an embedding credential.
 
-The fastest way to run CodeRAG MCP is using `npx`:
-
-```bash
-npx -y @sylphx/locus --root=/path/to/your/project
-```
-
-This command:
-- Downloads and runs the latest version
-- Indexes the specified codebase
-- Starts the MCP server
-- Watches for file changes
-
-**When to use npx:**
-- Quick testing or one-time use
-- Always want the latest version
-- Don't want to install globally
-
-## Global Installation
-
-Install CodeRAG MCP globally for faster startup:
+## Global installation
 
 ```bash
 npm install -g @sylphx/locus
+locus --root=/absolute/path/to/project
 ```
 
-Then run:
+Use the same `codebase_search` request contract after either installation mode.
+See the [tools reference](./tools.md) for valid fields, locators, gaps, and
+admission errors.
 
-```bash
-locus --root=/path/to/your/project
-```
+## Environment configuration
 
-**When to use global install:**
-- Faster startup (no download on each run)
-- Stable version for production use
-- Multiple projects on the same machine
+`CODERAG_ROOT` is the request-root default when the MCP call omits `root`.
+`MCP_TRANSPORT=http` (or `CODERAG_MCP_TRANSPORT=http`) selects the streamable
+HTTP transport; otherwise stdio is used. HTTP deployments can additionally set
+`MCP_HTTP_HOST`, `MCP_HTTP_PORT`, `MCP_API_KEY`, and `MCP_CORS_ORIGIN`.
 
-## CLI Arguments
+Do not put repository-specific credentials in package configuration. Search is
+local and deterministic on the Rust route.
 
-### `--root=<path>`
+## Verify the local journey
 
-Specify the codebase root directory to index.
-
-```bash
-npx -y @sylphx/locus --root=/Users/you/projects/my-app
-```
-
-**Default:** Current working directory
-
-**Notes:**
-- Path can be absolute or relative
-- Directory must exist and be readable
-- Creates `.coderag/` folder inside this directory
-
-### `--max-size=<bytes>`
-
-Maximum file size to index (in bytes).
-
-```bash
-npx -y @sylphx/locus --root=/path/to/project --max-size=2097152
-```
-
-**Default:** `1048576` (1 MB)
-
-**Common Values:**
-- 512 KB: `--max-size=524288`
-- 1 MB: `--max-size=1048576` (default)
-- 2 MB: `--max-size=2097152`
-- 5 MB: `--max-size=5242880`
-
-**When to adjust:**
-- Increase for codebases with large auto-generated files
-- Decrease for faster indexing on resource-constrained machines
-- Files larger than this limit are skipped during indexing
-
-### --no-auto-index
-
-Disable automatic indexing on startup.
-
-```bash
-npx -y @sylphx/locus --root=/path/to/project --no-auto-index
-```
-
-**Default:** Auto-indexing enabled
-
-**When to use:**
-- Manual control over indexing timing
-- Testing server functionality without indexing
-- Very large codebases where indexing takes time
-
-**Note:** You must manually trigger indexing by calling the `codebase_search` tool, which will index on first search.
-
-## Environment Variables
-
-CodeRAG MCP supports environment variables for configuration.
-
-### OPENAI_API_KEY
-
-Enable semantic search with OpenAI embeddings.
-
-```bash
-export OPENAI_API_KEY=sk-...
-npx -y @sylphx/locus --root=/path/to/project
-```
-
-**Effect:**
-- Switches from keyword search to semantic search mode
-- Uses `text-embedding-3-small` by default
-- Enables natural language queries
-
-**Without this variable:**
-- Uses keyword-only search (TF-IDF)
-- Still very effective for code search
-- No external API calls
-
-### OPENAI_BASE_URL
-
-Use OpenAI-compatible embedding endpoints (OpenRouter, Together AI, etc.).
-
-```bash
-export OPENAI_API_KEY=your-api-key
-export OPENAI_BASE_URL=https://openrouter.ai/api/v1
-npx -y @sylphx/locus --root=/path/to/project
-```
-
-**Use Cases:**
-- OpenRouter for multi-provider access
-- Together AI for faster/cheaper embeddings
-- Local embedding servers (e.g., text-embeddings-inference)
-- Azure OpenAI endpoints
-
-### EMBEDDING_MODEL
-
-Specify custom embedding model.
-
-```bash
-export OPENAI_API_KEY=sk-...
-export EMBEDDING_MODEL=text-embedding-3-large
-npx -y @sylphx/locus --root=/path/to/project
-```
-
-**Default:** `text-embedding-3-small`
-
-**Supported OpenAI Models:**
-- `text-embedding-3-small` (1536 dims, default)
-- `text-embedding-3-large` (3072 dims, higher quality)
-- `text-embedding-ada-002` (1536 dims, legacy)
-
-**Custom Models:**
-- Specify any model name for OpenAI-compatible endpoints
-- Must also set `EMBEDDING_DIMENSIONS` for custom models
-
-### EMBEDDING_DIMENSIONS
-
-Override embedding dimensions for custom models.
-
-```bash
-export OPENAI_API_KEY=your-key
-export OPENAI_BASE_URL=https://api.together.xyz/v1
-export EMBEDDING_MODEL=togethercomputer/m2-bert-80M-8k-retrieval
-export EMBEDDING_DIMENSIONS=768
-npx -y @sylphx/locus --root=/path/to/project
-```
-
-**When to use:**
-- Custom embedding models with non-standard dimensions
-- Automatically detected for standard OpenAI models
-
-## MCP Configuration Examples
-
-### Basic Setup (Keyword Search)
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/project"]
-    }
-  }
-}
-```
-
-### With Semantic Search
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/project"],
-      "env": {
-        "OPENAI_API_KEY": "sk-..."
-      }
-    }
-  }
-}
-```
-
-### Multiple Projects
-
-```json
-{
-  "mcpServers": {
-    "coderag-frontend": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/frontend"]
-    },
-    "coderag-backend": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/backend"]
-    }
-  }
-}
-```
-
-### Custom Settings
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@sylphx/locus",
-        "--root=/path/to/project",
-        "--max-size=2097152",
-        "--no-auto-index"
-      ],
-      "env": {
-        "OPENAI_API_KEY": "sk-...",
-        "EMBEDDING_MODEL": "text-embedding-3-large"
-      }
-    }
-  }
-}
-```
-
-## Verifying Installation
-
-After adding CodeRAG MCP to your configuration:
-
-1. **Restart your AI assistant** (Claude Desktop, Cursor, etc.)
-
-2. **Check server logs:**
-   - Claude Desktop: Check `~/Library/Logs/Claude/` (macOS) or `%APPDATA%\Claude\logs\` (Windows)
-   - Cursor: Check console output in Developer Tools
-   - Look for "Starting MCP Codebase Search Server" message
-
-3. **Test search:**
-   - Ask your AI: "Search the codebase for authentication"
-   - AI should use the `codebase_search` tool
-   - Results should appear in markdown format
+1. Start the command with an existing repository root.
+2. Ask the MCP client to call `codebase_search` with a concrete identifier such
+   as `authenticate` and a small `limit`.
+3. Confirm each result has a repository-relative `path` and a
+   `startLine`/`endLine` chunk locator; use `matchedLines` when present.
+4. If the response has `gaps`, preserve them with the result instead of
+   presenting the search as complete. If the engine returns `INVALID_ROOT`,
+   `INVALID_QUERY`, `INVALID_LIMIT`, or `INDEX_READ_FAILED`, fix that admission
+   cause and retry.
 
 ## Troubleshooting
 
-**Server doesn't start:**
-- Check that Node.js is installed (`node --version`)
-- Verify the `--root` path exists and is readable
-- Check MCP config file syntax (valid JSON)
+**The server does not start**
 
-**Search returns no results:**
-- Wait for initial indexing to complete (check logs)
-- Verify files exist in the specified `--root` directory
-- Check that file extensions are supported
+- Confirm the selected native package matches the host platform.
+- Run `locus doctor` to see which Rust server and sibling `locus-cli` binary
+  resolve locally.
+- Check that the configured root is an existing directory.
 
-**Semantic search not working:**
-- Verify `OPENAI_API_KEY` is set correctly
-- Check OpenAI API quota and permissions
-- Look for "Semantic search enabled" in server logs
+**The search returns no results**
 
-**Indexing is slow:**
-- Reduce `--max-size` to skip large files
-- Check for large auto-generated files (e.g., `dist/`, `build/`)
-- Consider adding `.coderagignore` file (future feature)
+- Use a concrete identifier or error term rather than a blank query.
+- Start with no filters, then add one extension/path filter at a time.
+- Check `gaps`: `empty_root` and `no_searchable_files` are truthful index
+  states, not invitations to switch engines.
 
-## Next Steps
+**Index refresh fails**
 
-- [Configuration Guide](./configuration.md) - Configure for your AI assistant
-- [Tools Reference](./tools.md) - Learn about the codebase_search tool
-- [IDE Integration](./ide-integration.md) - Setup for specific IDEs
+- Repair source-file permissions or invalid source encoding reported by
+  `INDEX_READ_FAILED`.
+- Repair `.coderag` write permissions or local disk space for
+  `INDEX_PERSIST_FAILED`.
+- Retry after the owning filesystem problem is fixed; unreadable files are not
+  silently converted into empty searchable content.

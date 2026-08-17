@@ -21,9 +21,13 @@ describe('codebase search evidence envelope', () => {
 					size: 120,
 					startLine: 1,
 					endLine: 12,
+					matchedLines: [1],
+					symbolName: 'authenticate',
+					chunkType: 'function',
 					snippet: 'export function authenticate() {}',
 				},
 			],
+			gaps: ['no_searchable_files'],
 		})
 
 		expect(envelope.status).toBe('ok')
@@ -32,6 +36,9 @@ describe('codebase search evidence envelope', () => {
 		expect(envelope.engine.contract_version).toBe('coderag-retrieval-v1')
 		expect(envelope.engine.index).toBe('rust-tfidf')
 		expect(envelope.results[0]?.locator.startLine).toBe(1)
+		expect(envelope.results[0]?.locator.matchedLines).toEqual([1])
+		expect(envelope.results[0]?.symbolName).toBe('authenticate')
+		expect(envelope.gaps).toEqual(['no_searchable_files'])
 		expect(envelope.results[0]?.confidence).toBe('deterministic')
 		expect(envelope.nextActions.length).toBeGreaterThan(0)
 	})

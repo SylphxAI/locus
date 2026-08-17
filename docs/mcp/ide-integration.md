@@ -1,180 +1,41 @@
-# IDE Integration Guide
+# IDE Integration
 
-This guide provides step-by-step setup instructions for using CodeRAG MCP with different AI-powered development tools.
+Every client uses the same Locus MCP server and `codebase_search` tool. Give
+each server entry one explicit repository root so the search boundary is
+repeatable.
 
 ## Claude Desktop
 
-Claude Desktop is Anthropic's official desktop application for Claude AI.
-
-### Prerequisites
-
-- Claude Desktop installed ([download here](https://claude.ai/download))
-- Node.js installed (v16 or later)
-
-### Setup Steps
-
-1. **Locate Configuration File**
-
-   **macOS:**
-   ```bash
-   open ~/Library/Application\ Support/Claude/
-   ```
-
-   **Windows:**
-   ```powershell
-   explorer %APPDATA%\Claude
-   ```
-
-   **Linux:**
-   ```bash
-   cd ~/.config/Claude/
-   ```
-
-2. **Edit claude_desktop_config.json**
-
-   Create or edit `claude_desktop_config.json`:
-
-   ```json
-   {
-     "mcpServers": {
-       "coderag": {
-         "command": "npx",
-         "args": ["-y", "@sylphx/locus", "--root=/path/to/your/project"]
-       }
-     }
-   }
-   ```
-
-   Replace `/path/to/your/project` with your project's absolute path.
-
-3. **Restart Claude Desktop**
-
-   Quit Claude Desktop completely and restart it.
-
-4. **Verify Setup**
-
-   In Claude Desktop, ask: "Search the codebase for authentication"
-
-   Claude should use the `codebase_search` tool and return results.
-
-### Enable Semantic Search
-
-Add your OpenAI API key to enable natural language queries:
+Add a server entry to `claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
-    "coderag": {
+    "locus": {
       "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/project"],
-      "env": {
-        "OPENAI_API_KEY": "sk-..."
-      }
+      "args": ["-y", "@sylphx/locus", "--root=/absolute/path/to/project"]
     }
   }
 }
 ```
 
-### Multiple Projects
+Restart Claude Desktop, then ask it to search for a concrete identifier such as
+`authenticate`.
 
-Configure multiple CodeRAG instances:
+## Claude Code
 
-```json
-{
-  "mcpServers": {
-    "frontend": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/frontend"]
-    },
-    "backend": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/backend"]
-    }
-  }
-}
+```bash
+claude mcp add locus -- npx -y @sylphx/locus --root=/absolute/path/to/project
 ```
-
-Tell Claude which project to search:
-```
-"Search the frontend codebase for authentication components"
-```
-
-### Troubleshooting
-
-**Server doesn't start:**
-- Check logs: `~/Library/Logs/Claude/mcp*.log` (macOS)
-- Verify Node.js is installed: `node --version`
-- Test manually: `npx @sylphx/locus --root=/path/to/project`
-
-**No results returned:**
-- Wait for initial indexing (check logs)
-- Verify project path exists
-- Try a broader search query
 
 ## Cursor
 
-Cursor is an AI-powered code editor built on VS Code.
-
-### Prerequisites
-
-- Cursor installed ([download here](https://cursor.sh))
-- Node.js installed (v16 or later)
-
-### Setup Steps
-
-1. **Locate Configuration File**
-
-   **macOS:**
-   ```bash
-   mkdir -p ~/.cursor
-   touch ~/.cursor/mcp.json
-   ```
-
-   **Windows:**
-   ```powershell
-   New-Item -Path "$env:USERPROFILE\.cursor" -ItemType Directory -Force
-   New-Item -Path "$env:USERPROFILE\.cursor\mcp.json" -ItemType File
-   ```
-
-   **Linux:**
-   ```bash
-   mkdir -p ~/.cursor
-   touch ~/.cursor/mcp.json
-   ```
-
-2. **Edit mcp.json**
-
-   Add CodeRAG MCP configuration:
-
-   ```json
-   {
-     "mcpServers": {
-       "coderag": {
-         "command": "npx",
-         "args": ["-y", "@sylphx/locus", "--root=/path/to/project"]
-       }
-     }
-   }
-   ```
-
-3. **Restart Cursor**
-
-   Close and reopen Cursor.
-
-4. **Verify Setup**
-
-   Ask Cursor's AI: "Search the codebase for authentication"
-
-   The AI should invoke the `codebase_search` tool.
-
-### Per-Workspace Configuration
-
-Create `.cursor/mcp.json` in your project root:
+Create `.cursor/mcp.json` in the workspace:
 
 ```json
 {
   "mcpServers": {
-    "coderag": {
+    "locus": {
       "command": "npx",
       "args": ["-y", "@sylphx/locus", "--root=${workspaceFolder}"]
     }
@@ -182,501 +43,77 @@ Create `.cursor/mcp.json` in your project root:
 }
 ```
 
-**Benefits:**
-- Configuration travels with project
-- Team members get same setup
-- No hardcoded paths
+Reload Cursor and ask for a `codebase_search` lookup. The result should include
+the repository-relative path and line locator rather than a guessed file.
 
-**Note:** `${workspaceFolder}` support depends on Cursor's MCP implementation. If unsupported, use relative paths or absolute paths.
+## VS Code clients
 
-### Troubleshooting
-
-**MCP servers not loading:**
-- Verify JSON syntax (use a JSON validator)
-- Check Cursor's developer console for errors
-- Ensure Node.js is in PATH
-
-**Slow startup:**
-- First run indexes the codebase (may take time)
-- Subsequent startups are fast (<100ms)
-
-## VS Code with Continue
-
-VS Code supports MCP through the Continue extension.
-
-### Prerequisites
-
-- VS Code installed
-- [Continue extension](https://marketplace.visualstudio.com/items?itemName=Continue.continue) installed
-- Node.js installed (v16 or later)
-
-### Setup Steps
-
-1. **Install Continue Extension**
-
-   In VS Code:
-   - Open Extensions (Cmd/Ctrl+Shift+X)
-   - Search for "Continue"
-   - Click Install
-
-2. **Locate Configuration File**
-
-   **macOS/Linux:**
-   ```bash
-   mkdir -p ~/.continue
-   ```
-
-   **Windows:**
-   ```powershell
-   New-Item -Path "$env:USERPROFILE\.continue" -ItemType Directory -Force
-   ```
-
-3. **Edit Continue Config**
-
-   Open `~/.continue/config.json` (create if doesn't exist):
-
-   ```json
-   {
-     "mcpServers": {
-       "coderag": {
-         "command": "npx",
-         "args": ["-y", "@sylphx/locus", "--root=${workspaceFolder}"]
-       }
-     }
-   }
-   ```
-
-4. **Reload VS Code**
-
-   Press Cmd/Ctrl+R to reload the window.
-
-5. **Verify Setup**
-
-   Open Continue chat panel and ask: "Search the codebase for authentication"
-
-### Workspace Configuration
-
-Create `.vscode/mcp.json` in your project:
+For a client that reads `.vscode/mcp.json`, use:
 
 ```json
 {
-  "mcp": {
-    "servers": {
-      "coderag": {
-        "command": "npx",
-        "args": ["-y", "@sylphx/locus", "--root=${workspaceFolder}"]
-      }
+  "servers": {
+    "locus": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@sylphx/locus", "--root=${workspaceFolder}"]
     }
   }
 }
 ```
 
-This allows project-specific MCP configuration.
+Some extensions use an `mcpServers` key instead; keep the same command and
+arguments and follow that extension's schema.
 
-### Troubleshooting
+## Multiple repositories
 
-**Continue doesn't see MCP servers:**
-- Verify extension is installed and enabled
-- Check `~/.continue/config.json` syntax
-- Reload VS Code window
-
-**Server fails to start:**
-- Test command manually in terminal
-- Check Continue output panel for errors
-- Ensure `--root` path exists
-
-## Windsurf
-
-Windsurf is an AI-powered development environment by Codeium.
-
-### Prerequisites
-
-- Windsurf installed ([download here](https://codeium.com/windsurf))
-- Node.js installed (v16 or later)
-
-### Setup Steps
-
-1. **Locate Configuration File**
-
-   **macOS:**
-   ```bash
-   mkdir -p ~/.codeium/windsurf
-   touch ~/.codeium/windsurf/mcp_config.json
-   ```
-
-   **Windows:**
-   ```powershell
-   New-Item -Path "$env:USERPROFILE\.codeium\windsurf" -ItemType Directory -Force
-   New-Item -Path "$env:USERPROFILE\.codeium\windsurf\mcp_config.json" -ItemType File
-   ```
-
-   **Linux:**
-   ```bash
-   mkdir -p ~/.codeium/windsurf
-   touch ~/.codeium/windsurf/mcp_config.json
-   ```
-
-2. **Edit mcp_config.json**
-
-   Add CodeRAG configuration:
-
-   ```json
-   {
-     "mcpServers": {
-       "coderag": {
-         "command": "npx",
-         "args": ["-y", "@sylphx/locus", "--root=/path/to/project"]
-       }
-     }
-   }
-   ```
-
-3. **Restart Windsurf**
-
-   Close and reopen Windsurf.
-
-4. **Verify Setup**
-
-   Ask Windsurf AI: "Search the codebase for authentication"
-
-### Workspace-Specific Configuration
-
-For project-specific setup, adjust the `--root` path:
+Use one server name and root per repository:
 
 ```json
 {
   "mcpServers": {
-    "coderag-project1": {
+    "locus-frontend": {
       "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/project1"]
+      "args": ["-y", "@sylphx/locus", "--root=/projects/frontend"]
     },
-    "coderag-project2": {
+    "locus-backend": {
       "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/project2"]
+      "args": ["-y", "@sylphx/locus", "--root=/projects/backend"]
     }
   }
 }
 ```
 
-### Troubleshooting
-
-**Server not visible:**
-- Check `mcp_config.json` syntax
-- Verify directory structure
-- Restart Windsurf
-
-**Indexing takes too long:**
-- Reduce `--max-size`: `"--max-size=524288"` (512KB)
-- Check for large generated files
-- Monitor logs for progress
-
-## Claude Code
-
-Claude Code is Anthropic's CLI tool for Claude AI.
-
-### Prerequisites
-
-- Claude Code CLI installed
-- Node.js installed (v16 or later)
-
-### Setup Steps
-
-1. **Add MCP Server**
-
-   ```bash
-   claude mcp add coderag -- npx -y @sylphx/locus --root=/path/to/project
-   ```
-
-2. **Verify Configuration**
-
-   ```bash
-   claude mcp list
-   ```
-
-   Should show `coderag` server.
-
-3. **Test Search**
-
-   ```bash
-   claude chat "Search the codebase for authentication"
-   ```
-
-### Update Server
-
-```bash
-claude mcp remove coderag
-claude mcp add coderag -- npx -y @sylphx/locus --root=/path/to/project
-```
-
-### Troubleshooting
-
-**Server not found:**
-- Run `claude mcp list` to verify
-- Check `~/.config/claude/mcp.json` (macOS/Linux) or `%APPDATA%\Claude\mcp.json` (Windows)
-
-## Other MCP Clients
-
-CodeRAG MCP works with any MCP-compatible client. General setup pattern:
-
-### Generic MCP Configuration
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/project"]
-    }
-  }
-}
-```
-
-### Known Compatible Clients
-
-- **Claude Desktop** - Official Anthropic client
-- **Cursor** - AI code editor
-- **Continue** - VS Code extension
-- **Windsurf** - Codeium IDE
-- **Claude Code** - CLI tool
-- **Zed** - Modern code editor (MCP support coming)
-- **Custom MCP Clients** - Any client implementing MCP protocol
-
-### Integration Steps
-
-1. Locate client's MCP configuration file (usually `~/.client-name/mcp.json`)
-2. Add CodeRAG server entry
-3. Restart client
-4. Test with codebase search query
-
-## Advanced Integration Patterns
-
-### Dynamic Project Selection
-
-Configure multiple projects and let AI choose:
-
-```json
-{
-  "mcpServers": {
-    "web-frontend": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/projects/web-frontend"]
-    },
-    "web-backend": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/projects/web-backend"]
-    },
-    "mobile-app": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/projects/mobile"]
-    }
-  }
-}
-```
-
-Usage:
-```
-"Search the web-backend codebase for API authentication"
-```
-
-### Environment-Specific Configuration
-
-Development and production environments:
-
-```json
-{
-  "mcpServers": {
-    "coderag-dev": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/dev/project"],
-      "env": {
-        "OPENAI_API_KEY": "sk-dev-..."
-      }
-    },
-    "coderag-prod": {
-      "command": "/usr/local/bin/locus",
-      "args": ["--root=/var/www/project", "--max-size=5242880"],
-      "env": {
-        "OPENAI_API_KEY": "sk-prod-..."
-      }
-    }
-  }
-}
-```
-
-### Monorepo Setup
-
-Index entire monorepo with path filtering:
-
-```json
-{
-  "mcpServers": {
-    "monorepo": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/path/to/monorepo"]
-    }
-  }
-}
-```
-
-Use path filters in queries:
-```json
-{
-  "query": "authentication",
-  "path_filter": "packages/backend"
-}
-```
-
-## Performance Optimization
-
-### Large Codebases
-
-For projects with 10,000+ files:
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@sylphx/locus",
-        "--root=/path/to/large-project",
-        "--max-size=262144"
-      ]
-    }
-  }
-}
-```
-
-**Settings:**
-- `--max-size=262144` (256 KB) skips large files
-- First indexing: 10-60 seconds
-- Subsequent startups: <100ms
-- Search: <50ms
-
-### Resource-Constrained Environments
-
-For limited memory/CPU:
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@sylphx/locus",
-        "--root=/path/to/project",
-        "--max-size=131072"
-      ]
-    }
-  }
-}
-```
-
-**Settings:**
-- `--max-size=131072` (128 KB)
-- No `OPENAI_API_KEY` (keyword search only)
-- SQLite-based storage (low memory)
-
-## Debugging Integration Issues
-
-### Enable Detailed Logging
-
-Most MCP clients log server output. Check these locations:
-
-**Claude Desktop:**
-- macOS: `~/Library/Logs/Claude/`
-- Windows: `%APPDATA%\Claude\logs\`
-- Linux: `~/.config/Claude/logs/`
-
-**Cursor:**
-- Developer Tools → Console
-- Look for MCP-related messages
-
-**VS Code (Continue):**
-- Output panel → Continue
-- Check for server startup errors
-
-### Test Server Manually
-
-Run CodeRAG MCP outside the client:
-
-```bash
-npx @sylphx/locus --root=/path/to/project
-```
-
-Expected output:
-```
-[INFO] Starting MCP Codebase Search Server...
-[INFO] Codebase root: /path/to/project
-[SUCCESS] Indexed 1234 files
-```
-
-If this works but integration doesn't, the issue is with client configuration.
-
-### Common Issues
-
-**Server starts but no results:**
-- Wait for indexing to complete
-- Check logs for indexing progress
-- Verify files exist in `--root` path
-
-**JSON syntax errors:**
-- Use JSON validator
-- Check for trailing commas
-- Ensure proper quote escaping
-
-**Command not found:**
-- Verify Node.js is in PATH
-- Try absolute path: `/usr/local/bin/node`
-- Use global install: `npm install -g @sylphx/locus`
-
-## Best Practices
-
-### Configuration Management
-
-**Use Version Control:**
-- Check in `.vscode/mcp.json` or `.cursor/mcp.json`
-- Team members get automatic setup
-- Use `${workspaceFolder}` for portability
-
-**Document Setup:**
-- Add MCP setup to project README
-- Include example queries
-- Note required environment variables
-
-### Query Patterns
-
-**Proactive Search:**
-```
-"Before implementing authentication, search for existing auth patterns"
-```
-
-**Exploratory Search:**
-```
-"Show me how error handling is done in this codebase"
-```
-
-**Targeted Search:**
-```
-"Find all API routes that handle user creation"
-```
-
-### Security Considerations
-
-**API Keys:**
-- Never commit API keys to version control
-- Use environment variables
-- Rotate keys regularly
-
-**Sensitive Code:**
-- Use `exclude_paths` for sensitive directories
-- Consider separate indexes for public/private code
-- Review search results before sharing
-
-## Next Steps
-
-- [Tools Reference](./tools.md) - Learn all codebase_search parameters
-- [Configuration Guide](./configuration.md) - Advanced configuration options
-- [Installation Guide](./installation.md) - CLI arguments and environment variables
+Do not point one process at multiple roots or infer a root from a consumer's
+current directory; the root is the repository admission boundary.
+
+## Verify the journey
+
+1. Confirm the client starts the canonical `@sylphx/locus` package.
+2. Search for a known symbol or error term.
+3. Check that `status` is `ok`, `route` is `rust-tfidf`, and every result
+   has `path` plus `startLine`/`endLine`.
+4. Prefer `matchedLines` for the exact source lines and retain any `gaps` or
+   `warnings` in the consumer record.
+
+An empty `results` array is a valid no-match response. `INVALID_ROOT`,
+`INVALID_QUERY`, `INVALID_LIMIT`, `INVALID_SEARCH_OPTIONS`, and
+`INDEX_READ_FAILED` are actionable failures; fix the owning input or filesystem
+state and retry rather than switching to an unowned search path.
+
+## Troubleshooting
+
+**The server is not listed**
+
+- Validate the client JSON and restart the client.
+- Run `npx -y @sylphx/locus --root=/absolute/path/to/project doctor` only when
+  using the local launcher; otherwise run `locus doctor` after a global install.
+- Confirm the root directory exists and is readable.
+
+**The server starts but search fails**
+
+- Verify the request contains a non-empty query and a limit from `1` through
+  `100`.
+- Remove filters one at a time to find an invalid empty value.
+- Read the returned error code and repair the root, source encoding, or local
+  `.coderag` permissions named by the error.

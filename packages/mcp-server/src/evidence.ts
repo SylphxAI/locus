@@ -1,5 +1,10 @@
 import type { SearchResult } from '@sylphx/coderag'
 
+type SearchResultWithLocators = SearchResult & {
+	matchedLines?: number[]
+	symbolName?: string
+}
+
 export type RetrievalRoute = 'tfidf' | 'semantic' | 'rust-tfidf' | 'rust-semantic-hybrid'
 
 export interface RetrievalEngineEvidence {
@@ -12,6 +17,7 @@ export interface RetrievalLocator {
 	path: string
 	startLine?: number
 	endLine?: number
+	matchedLines?: number[]
 }
 
 export interface ScoreComponentEvidence {
@@ -31,6 +37,7 @@ export interface RetrievalResultEvidence {
 	route: RetrievalRoute
 	confidence: 'deterministic' | 'derived' | 'inferred' | 'unknown'
 	snippet?: string
+	symbolName?: string
 	chunkType?: string
 	language?: string
 }
@@ -48,6 +55,7 @@ export interface CodebaseSearchEnvelope {
 	}
 	results: RetrievalResultEvidence[]
 	warnings: string[]
+	gaps: string[]
 	nextActions: string[]
 }
 
@@ -59,6 +67,7 @@ export function buildCodebaseSearchEnvelope(input: {
 	indexing: boolean
 	results: SearchResult[]
 	warnings?: string[]
+	gaps?: string[]
 }): CodebaseSearchEnvelope {
 	return {
 		status: 'ok',
@@ -71,25 +80,31 @@ export function buildCodebaseSearchEnvelope(input: {
 			indexing: input.indexing,
 			stale: false,
 		},
-		results: input.results.map((result) => ({
-			path: result.path,
-			locator: {
+		results: input.results.map((result) => {
+			const located = result as SearchResultWithLocators
+			return {
 				path: result.path,
-				startLine: result.startLine,
-				endLine: result.endLine,
-			},
-			score: result.score,
-			matchedTerms: result.matchedTerms ?? [],
-			...(result.scoreComponents && result.scoreComponents.length > 0
-				? { scoreComponents: result.scoreComponents }
-				: {}),
-			route: input.route,
-			confidence: 'deterministic',
-			snippet: result.snippet,
-			chunkType: result.chunkType,
-			language: result.language,
-		})),
+				locator: {
+					path: result.path,
+					startLine: result.startLine,
+					endLine: result.endLine,
+					matchedLines: located.matchedLines,
+				},
+				score: result.score,
+				matchedTerms: result.matchedTerms ?? [],
+				...(result.scoreComponents && result.scoreComponents.length > 0
+					? { scoreComponents: result.scoreComponents }
+					: {}),
+				route: input.route,
+				confidence: 'deterministic' as const,
+				snippet: result.snippet,
+				symbolName: located.symbolName,
+				chunkType: result.chunkType,
+				language: result.language,
+			}
+		}),
 		warnings: input.warnings ?? [],
+		gaps: input.gaps ?? [],
 		nextActions: [
 			'Open the top result path and verify the cited line range before editing.',
 			'Re-run codebase_search after index refresh if files changed.',
@@ -111,6 +126,7 @@ export function mapRustHitsToSearchResults(
 		}>
 		startLine?: number
 		endLine?: number
+		matchedLines?: number[]
 		snippet?: string
 		symbolName?: string
 		chunkType?: string
@@ -126,7 +142,9 @@ export function mapRustHitsToSearchResults(
 		size: hit.snippet?.length ?? 0,
 		startLine: hit.startLine,
 		endLine: hit.endLine,
+		matchedLines: hit.matchedLines,
 		snippet: hit.snippet,
+		...(hit.symbolName ? { symbolName: hit.symbolName } : {}),
 		...(hit.chunkType || hit.symbolName ? { chunkType: hit.chunkType ?? 'function' } : {}),
 	}))
 }

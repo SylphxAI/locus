@@ -3,10 +3,20 @@ use std::sync::{Mutex, OnceLock};
 use std::time::Instant;
 
 use crate::index::{
-    refresh_index, search_index_with_options, IndexMode, SearchIndex, SearchOptions,
+    canonical_root, ensure_index_gaps, refresh_index, search_index_with_options, IndexMode,
+    SearchIndex, SearchOptions,
 };
 use crate::store::{load_index, save_index};
 use crate::types::ToolEnvelope;
+
+fn index_failure(message: &str) -> ToolEnvelope {
+    let code = message
+        .split_once(':')
+        .map(|(code, _)| code)
+        .filter(|code| code.starts_with("INDEX_") || code.starts_with("HASH_"))
+        .unwrap_or("INDEX_FAILED");
+    ToolEnvelope::error(code, message)
+}
 
 static INDEX: OnceLock<Mutex<Option<SearchIndex>>> = OnceLock::new();
 
@@ -27,6 +37,10 @@ fn coderag_index(input: serde_json::Value) -> ToolEnvelope {
         Some(value) => value,
         None => return ToolEnvelope::error("INVALID_ROOT", "Missing required field: root"),
     };
+    let canonical = match canonical_root(Path::new(root)) {
+        Ok(value) => value,
+        Err(message) => return ToolEnvelope::error("INVALID_ROOT", &message),
+    };
     let max_file_bytes = input
         .get("maxFileBytes")
         .and_then(|v| v.as_u64())
@@ -37,17 +51,18 @@ fn coderag_index(input: serde_json::Value) -> ToolEnvelope {
         .map(IndexMode::parse)
         .unwrap_or(IndexMode::Auto);
 
-    match refresh_index(Path::new(root), max_file_bytes, mode) {
+    match refresh_index(&canonical, max_file_bytes, mode) {
         Ok((index, stats)) => {
-            if let Err(message) = save_index(Path::new(root), &index) {
+            if let Err(message) = save_index(&canonical, &index) {
                 return ToolEnvelope::error("INDEX_PERSIST_FAILED", &message);
             }
+            let gaps = index.gaps.clone();
             if let Ok(mut guard) = index_store().lock() {
                 *guard = Some(index);
             }
-            ToolEnvelope::ok_index(stats)
+            ToolEnvelope::ok_index_with_gaps(stats, gaps)
         }
-        Err(message) => ToolEnvelope::error("INDEX_FAILED", &message),
+        Err(message) => index_failure(&message),
     }
 }
 
@@ -67,36 +82,57 @@ fn resolve_index(root: Option<&str>) -> Result<SearchIndex, ToolEnvelope> {
         ));
     };
 
-    match load_index(Path::new(root)) {
-        Ok(index) => {
+    let canonical = canonical_root(Path::new(root))
+        .map_err(|message| ToolEnvelope::error("INVALID_ROOT", &message))?;
+
+    match load_index(&canonical) {
+        Ok(mut index) => {
+            ensure_index_gaps(&mut index);
             if let Ok(mut guard) = index_store().lock() {
                 *guard = Some(index.clone());
             }
             Ok(index)
         }
-        Err(_) => match refresh_index(Path::new(root), 1_048_576, IndexMode::Auto) {
+        Err(_) => match refresh_index(&canonical, 1_048_576, IndexMode::Auto) {
             Ok((index, _)) => {
-                let _ = save_index(Path::new(root), &index);
+                if let Err(message) = save_index(&canonical, &index) {
+                    return Err(ToolEnvelope::error("INDEX_PERSIST_FAILED", &message));
+                }
                 if let Ok(mut guard) = index_store().lock() {
                     *guard = Some(index.clone());
                 }
                 Ok(index)
             }
-            Err(message) => Err(ToolEnvelope::error("INDEX_FAILED", &message)),
+            Err(message) => Err(index_failure(&message)),
         },
     }
 }
 
 fn coderag_search(input: serde_json::Value) -> ToolEnvelope {
     let started = Instant::now();
-    let query = match input.get("query").and_then(|v| v.as_str()) {
-        Some(value) => value,
+    let query = match input.get("query").and_then(|v| v.as_str()).map(str::trim) {
+        Some(value) if !value.is_empty() => value,
         None => return ToolEnvelope::error("INVALID_QUERY", "Missing required field: query"),
+        Some(_) => return ToolEnvelope::error("INVALID_QUERY", "Query must not be empty"),
     };
-    let limit = input
-        .get("limit")
-        .and_then(|v| v.as_u64())
-        .unwrap_or(10) as usize;
+    let limit = match input.get("limit") {
+        None => 10,
+        Some(value) => match value.as_u64() {
+            Some(value) if (1..=100).contains(&value) => value as usize,
+            Some(value) => {
+                return ToolEnvelope::error(
+                    "INVALID_LIMIT",
+                    &format!("limit must be between 1 and 100, got {value}"),
+                )
+            }
+            None => {
+                return ToolEnvelope::error(
+                    "INVALID_LIMIT",
+                    "limit must be an integer between 1 and 100",
+                )
+            }
+        },
+    };
 
     let root = input.get("root").and_then(|v| v.as_str());
     let index = match resolve_index(root) {
@@ -113,6 +149,67 @@ fn coderag_search(input: serde_json::Value) -> ToolEnvelope {
             )
         }
     };
+    if let Err(message) = options.validate() {
+        return ToolEnvelope::error("INVALID_SEARCH_OPTIONS", &message);
+    }
     let results = search_index_with_options(&index, query, limit, &options);
-    ToolEnvelope::ok_search(query, results, started.elapsed().as_millis() as u64)
+    ToolEnvelope::ok_search_with_gaps(
+        query,
+        results,
+        started.elapsed().as_millis() as u64,
+        index.gaps.clone(),
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::handle_tool;
+    use serde_json::json;
+
+    #[test]
+    fn search_admission_rejects_empty_query() {
+        let envelope = handle_tool("coderag_search", json!({ "root": "/tmp", "query": "   " }));
+
+        assert_eq!(envelope.status, "error");
+        assert_eq!(envelope.code.as_deref(), Some("INVALID_QUERY"));
+    }
+
+    #[test]
+    fn search_admission_rejects_invalid_limit() {
+        let envelope = handle_tool(
+            "coderag_search",
+            json!({ "root": "/tmp", "query": "auth", "limit": 0 }),
+        );
+
+        assert_eq!(envelope.status, "error");
+        assert_eq!(envelope.code.as_deref(), Some("INVALID_LIMIT"));
+    }
+
+    #[test]
+    fn search_admission_rejects_non_directory_root() {
+        let envelope = handle_tool(
+            "coderag_search",
+            json!({ "root": "/definitely/not/a/repository", "query": "auth" }),
+        );
+
+        assert_eq!(envelope.status, "error");
+        assert_eq!(envelope.code.as_deref(), Some("INVALID_ROOT"));
+    }
+
+    #[test]
+    fn index_reports_specific_read_failure_code() {
+        let root = std::env::temp_dir().join(format!(
+            "coderag-engine-invalid-utf8-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(&root).expect("temp root");
+        std::fs::write(root.join("broken.ts"), [0xff, 0xfe, 0xfd]).expect("invalid source");
+
+        let envelope = handle_tool("coderag_index", json!({ "root": root.to_string_lossy() }));
+
+        assert_eq!(envelope.status, "error");
+        assert_eq!(envelope.code.as_deref(), Some("INDEX_READ_FAILED"));
+        let _ = std::fs::remove_dir_all(root);
+    }
 }
