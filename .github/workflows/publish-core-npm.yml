@@ -24,7 +24,7 @@ jobs:
           always-auth: true
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: '1.3.12'
+          bun-version: '1.4.0'
       - name: Build and publish @sylphx/coderag
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -39,8 +39,8 @@ jobs:
           bun install --frozen-lockfile || bun install
           bun run --filter @sylphx/coderag build
           cd packages/core
-          NAME=$(node -p "require('./package.json').name")
-          VER=$(node -p "require('./package.json').version")
+          NAME=$(bun -p "require('./package.json').name")
+          VER=$(bun -p "require('./package.json').version")
           if npm view "$NAME@$VER" version >/dev/null 2>&1; then
             echo already "$NAME@$VER"
             npm view "$NAME" version dist-tags
