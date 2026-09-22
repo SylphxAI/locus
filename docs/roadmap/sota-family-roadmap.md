@@ -23,7 +23,7 @@ filesystem writes, document extraction, or model deliberation.
 | Filesystem MCP | Applies safe reads and writes. CodeRAG indexes and searches code but does not mutate files. |
 | Reader MCPs | Extract non-code evidence from PDFs, images, and videos. CodeRAG may index generated text only through explicit user-controlled inputs. |
 | Consultant MCP | Reviews retrieval strategy, ranking decisions, and architectural tradeoffs when high-stakes changes need external challenge. |
-| Smart Reader MCP | Routes non-code files; CodeRAG stays focused on repository text and source code retrieval. |
+| format routing MCP | Routes non-code files; CodeRAG stays focused on repository text and source code retrieval. |
 
 ## SOTA End State
 

@@ -1,6 +1,6 @@
 # Configuration Guide
 
-This guide covers how to configure CodeRAG MCP for different AI assistants and use cases.
+This guide covers how to configure Locus MCP for different AI assistants and use cases.
 
 ## Claude Desktop Configuration
 
@@ -246,7 +246,7 @@ Create or edit `mcp_config.json`:
 
 ## Multiple Project Setup
 
-Configure multiple CodeRAG instances for different projects.
+Configure multiple Locus instances for different projects.
 
 ### Separate Servers per Project
 
@@ -467,7 +467,7 @@ Get-Content $env:APPDATA\Claude\claude_desktop_config.json | ConvertFrom-Json
 
 ### Test Server Manually
 
-Test CodeRAG MCP outside of your AI assistant:
+Test Locus MCP outside of your AI assistant:
 
 ```bash
 npx @sylphx/locus --root=/path/to/project

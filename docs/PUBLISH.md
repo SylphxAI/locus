@@ -4,8 +4,8 @@
 | --- | --- |
 | Brand | Locus |
 | Canonical npm | `@sylphx/locus` |
-| Source tip version | `0.5.2` |
-| Live npm (main package) | check `npm view @sylphx/locus version` — may lag source tip |
+| Version | `0.6.0` |
+| MCP Registry | `io.github.SylphxAI/locus` |
 | Core library | `@sylphx/coderag` |
 | Natives | `@sylphx/locus-<platform>` |
 | Auth | GitHub org `NPM_TOKEN` via publish workflows |
@@ -23,11 +23,11 @@ Do **not** install `@sylphx/coderag-mcp` — transitional id is retired as a pub
 1. Ensure main tip is brand-sole (`@sylphx/locus` package name, `locus` bin only).
 2. Prefer multi-arch for full native coverage:
    ```bash
-   gh workflow run 'Publish Locus MCP multi-arch' --repo SylphxAI/coderag -f confirm=PUBLISH
+   gh workflow run 'Publish Locus MCP multi-arch' --repo SylphxAI/locus -f confirm=PUBLISH
    ```
 3. Or linux-x64 + main package only:
    ```bash
-   gh workflow run 'Publish MCP npm' --repo SylphxAI/coderag -f confirm=PUBLISH
+   gh workflow run 'Publish MCP npm' --repo SylphxAI/locus -f confirm=PUBLISH
    ```
 4. Prove registry plane separately from source merge:
    ```bash
@@ -39,7 +39,7 @@ Dual-publish brand-alias workflow is retired.
 
 
 
-## Host proof (linux-x64)
+## Previous host proof (linux-x64)
 
 | Field | Value |
 | --- | --- |

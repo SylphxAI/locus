@@ -1,12 +1,12 @@
-# What is CodeRAG?
+# What is Locus?
 
-CodeRAG is a lightning-fast semantic code search library designed for RAG (Retrieval-Augmented Generation) applications. It combines traditional keyword search (TF-IDF/BM25) with optional vector embeddings to provide accurate, context-aware code search results.
+Locus is a lightning-fast semantic code search library designed for RAG (Retrieval-Augmented Generation) applications. It combines traditional keyword search (TF-IDF/BM25) with optional vector embeddings to provide accurate, context-aware code search results.
 
 ## Key Features
 
 ### AST-Based Chunking
 
-Unlike traditional search that returns entire files, CodeRAG uses Abstract Syntax Tree (AST) parsing to split code at semantic boundaries:
+Unlike traditional search that returns entire files, Locus uses Abstract Syntax Tree (AST) parsing to split code at semantic boundaries:
 
 - **Functions**: Find specific function implementations
 - **Classes**: Locate class definitions and methods
@@ -17,7 +17,7 @@ This means search results are more precise and consume fewer tokens when used wi
 
 ### Hybrid Search
 
-CodeRAG supports three search modes:
+Locus supports three search modes:
 
 1. **Keyword Search (TF-IDF/BM25)**: Fast, precise matching using StarCoder2 tokenization
 2. **Semantic Search (Vector)**: Meaning-based search using embeddings (requires OpenAI API)
@@ -34,7 +34,7 @@ CodeRAG supports three search modes:
 
 ### Language Support
 
-CodeRAG supports 15+ programming languages out of the box:
+Locus supports 15+ programming languages out of the box:
 
 - **JavaScript/TypeScript**: JS, JSX, TS, TSX, MJS, CJS
 - **Systems**: Python, Go, Rust, Java, C, C++, Ruby, PHP
@@ -45,7 +45,7 @@ CodeRAG supports 15+ programming languages out of the box:
 
 ### AI Assistants
 
-CodeRAG powers AI coding assistants by providing relevant code context:
+Locus powers AI coding assistants by providing relevant code context:
 
 ```typescript
 // User asks: "How does authentication work?"
@@ -102,7 +102,7 @@ const results = await indexer.search('database connection pool', {
 
 ## Next Steps
 
-- [Installation](/guide/installation) - Install CodeRAG in your project
+- [Installation](/guide/installation) - Install Locus in your project
 - [Quick Start](/guide/quick-start) - Build your first search index
 - [MCP Server](/mcp/overview) - Use with AI assistants
 - [Stop code-search guessing](/articles/stop-code-search-guessing) - Why chunk-level search beats grep dumps

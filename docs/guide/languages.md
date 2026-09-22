@@ -1,6 +1,6 @@
 # Language Support
 
-CodeRAG supports 15+ programming and markup languages through Synth parsers. Each language has dedicated AST parsing for accurate chunking.
+Locus supports 15+ programming and markup languages through Synth parsers. Each language has dedicated AST parsing for accurate chunking.
 
 ## Full List of 15+ Languages
 
@@ -108,7 +108,7 @@ CodeRAG supports 15+ programming and markup languages through Synth parsers. Eac
 
 ## Extension Mappings
 
-CodeRAG automatically detects language from file extension.
+Locus automatically detects language from file extension.
 
 **Extension to language mapping:**
 
@@ -264,7 +264,7 @@ interface Tree {
 
 **Parser loading:**
 
-CodeRAG automatically loads the correct parser based on file extension:
+Locus automatically loads the correct parser based on file extension:
 
 ```typescript
 // Auto-discovery
@@ -276,7 +276,7 @@ const tree = await parser.parseAsync(code)
 
 ## Adding Custom Languages
 
-CodeRAG's language registry is extensible. You can add custom languages without modifying core code.
+Locus's language registry is extensible. You can add custom languages without modifying core code.
 
 **Language configuration:**
 
@@ -296,7 +296,7 @@ LANGUAGE_REGISTRY['kotlin'] = {
   contextTypes: ['ImportDirective', 'PackageDirective']
 }
 
-// Now CodeRAG can parse Kotlin files
+// Now Locus can parse Kotlin files
 const chunks = await chunkCodeByAST(kotlinCode, 'Main.kt')
 ```
 

@@ -428,7 +428,7 @@ const files = await storage.getAllFiles()
 - Maximum file size: 1MB (configurable via `maxFileSize`)
 - Binary files: Automatically skipped
 - Chunk size: 100-1000 characters (configurable)
-- Supported languages: See [language-config.ts](https://github.com/SylphxAI/coderag/blob/main/packages/core/src/language-config.ts)
+- Supported languages: See [language-config.ts](https://github.com/SylphxAI/locus/blob/main/packages/core/src/language-config.ts)
 
 ## Related
 

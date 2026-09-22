@@ -9,9 +9,9 @@ MCP uses a client-server architecture where:
 - **MCP Servers** provide tools and data to the client
 - **Tools** are functions the AI can invoke to accomplish tasks
 
-## What is CodeRAG MCP?
+## What is Locus MCP?
 
-CodeRAG MCP (`@sylphx/locus`) is an MCP server that provides intelligent codebase search capabilities to AI assistants. It enables AI to search and understand your codebase using hybrid TF-IDF and optional vector embeddings.
+Locus MCP (`@sylphx/locus`) is an MCP server that provides intelligent codebase search capabilities to AI assistants. It enables AI to search and understand your codebase using hybrid TF-IDF and optional vector embeddings.
 
 **Key Benefits:**
 
@@ -21,9 +21,9 @@ CodeRAG MCP (`@sylphx/locus`) is an MCP server that provides intelligent codebas
 - **Smart**: Hybrid TF-IDF + optional OpenAI embeddings for semantic understanding
 - **Automatic**: Auto-indexes on startup, watches for file changes
 
-## How CodeRAG MCP Works
+## How Locus MCP Works
 
-CodeRAG MCP runs as a background process that your AI assistant communicates with via standard input/output. When you ask the AI to search your codebase, it calls the MCP server, which performs the search and returns relevant code snippets.
+Locus MCP runs as a background process that your AI assistant communicates with via standard input/output. When you ask the AI to search your codebase, it calls the MCP server, which performs the search and returns relevant code snippets.
 
 **Architecture:**
 
@@ -35,7 +35,7 @@ CodeRAG MCP runs as a background process that your AI assistant communicates wit
          │ MCP Protocol (stdio)
          │
 ┌────────▼────────┐
-│   CodeRAG MCP   │  Provides codebase_search tool
+│   Locus MCP   │  Provides codebase_search tool
 │   MCP Server    │
 └────────┬────────┘
          │
@@ -55,7 +55,7 @@ CodeRAG MCP runs as a background process that your AI assistant communicates wit
 
 ## Available Tool: codebase_search
 
-CodeRAG MCP provides a single tool: `codebase_search`
+Locus MCP provides a single tool: `codebase_search`
 
 **Search Modes:**
 
@@ -135,7 +135,7 @@ AST-based chunking with semantic boundary detection:
 
 ## Next Steps
 
-- [Installation Guide](./installation.md) - Install and run CodeRAG MCP
+- [Installation Guide](./installation.md) - Install and run Locus MCP
 - [Configuration Guide](./configuration.md) - Configure for your AI assistant
 - [Tools Reference](./tools.md) - Detailed tool documentation
 - [IDE Integration](./ide-integration.md) - Setup for specific IDEs

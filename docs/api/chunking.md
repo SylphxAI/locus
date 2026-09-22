@@ -1,6 +1,6 @@
 # AST Chunking
 
-CodeRAG uses AST-based chunking to split code at semantic boundaries (functions, classes, etc.) using the Synth parser library.
+Locus uses AST-based chunking to split code at semantic boundaries (functions, classes, etc.) using the Synth parser library.
 
 ## chunkCodeByAST()
 
@@ -140,7 +140,7 @@ console.log(languages)
 
 ## Supported Languages
 
-CodeRAG supports AST chunking for the following languages:
+Locus supports AST chunking for the following languages:
 
 **JavaScript/TypeScript**
 - Extensions: `.js`, `.mjs`, `.cjs`, `.jsx`, `.ts`, `.tsx`, `.mts`, `.cts`

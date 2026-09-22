@@ -1,6 +1,6 @@
 # TypeScript Types
 
-Comprehensive type definitions for CodeRAG API.
+Comprehensive type definitions for Locus API.
 
 ## Indexer Types
 
@@ -463,7 +463,7 @@ interface CacheStats {
 
 ## Type Guards
 
-Useful type guards for working with CodeRAG types.
+Useful type guards for working with Locus types.
 
 ```typescript
 function isPersistentStorage(storage: Storage): storage is PersistentStorage {

@@ -5,6 +5,7 @@ Policy: **few, powerful, obvious** tools. Prefer the primary search tool first.
 | Tool / surface | Role |
 | --- | --- |
 | `codebase_search` | Primary hybrid retrieval (index + ranked AST chunks) |
+| `find_related` | Related code chunks from a known file and line |
 | CLI `locus` | Brand CLI / MCP launcher |
 | CLI `locus` | Brand launcher |
 | SDK `@sylphx/coderag` | Programmatic library |

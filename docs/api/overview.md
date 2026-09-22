@@ -1,6 +1,6 @@
 # API Overview
 
-CodeRAG provides a comprehensive API for semantic code search with vector embeddings. This reference documents all exported types, classes, and functions.
+Locus provides a comprehensive API for semantic code search with vector embeddings. This reference documents all exported types, classes, and functions.
 
 ## Installation
 
@@ -10,7 +10,7 @@ npm install @sylphx/coderag
 
 ## Package Structure
 
-CodeRAG uses ESM-only exports with TypeScript support. The package provides both a main entry point and specialized subpath exports:
+Locus uses ESM-only exports with TypeScript support. The package provides both a main entry point and specialized subpath exports:
 
 ### Main Entry Point
 
@@ -101,7 +101,7 @@ const results = await hybridSearch('authentication flow', indexer, {
 
 ## TypeScript Support
 
-CodeRAG includes comprehensive TypeScript definitions:
+Locus includes comprehensive TypeScript definitions:
 
 ```typescript
 import type {
@@ -125,7 +125,7 @@ const results: SearchResult[] = await indexer.search('query')
 
 ## Environment Variables
 
-CodeRAG respects the following environment variables:
+Locus respects the following environment variables:
 
 ```bash
 # OpenAI API configuration
@@ -141,7 +141,7 @@ EMBEDDING_DIMENSIONS=1536  # Optional: override default
 
 ### Chunk-Based Indexing
 
-CodeRAG uses AST-based chunking to split code at semantic boundaries (functions, classes, etc.). This provides better search granularity than file-level indexing.
+Locus uses AST-based chunking to split code at semantic boundaries (functions, classes, etc.). This provides better search granularity than file-level indexing.
 
 ```typescript
 import { chunkCodeByAST } from '@sylphx/coderag'
@@ -156,7 +156,7 @@ const chunks = await chunkCodeByAST(
 
 ### Persistent Storage
 
-CodeRAG uses SQLite via LibSQL for persistent storage:
+Locus uses SQLite via LibSQL for persistent storage:
 
 ```typescript
 import { PersistentStorage } from '@sylphx/coderag'

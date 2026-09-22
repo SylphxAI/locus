@@ -10,7 +10,7 @@ Guide
 
 ## Quick Start with npx
 
-The fastest way to run CodeRAG MCP is using `npx`:
+The fastest way to run Locus MCP is using `npx`:
 
 ```bash
 npx -y @sylphx/locus --root=/path/to/your/project
@@ -29,7 +29,7 @@ This command:
 
 ## Global Installation
 
-Install CodeRAG MCP globally for faster startup:
+Install Locus MCP globally for faster startup:
 
 ```bash
 npm install -g @sylphx/locus
@@ -103,7 +103,7 @@ npx -y @sylphx/locus --root=/path/to/project --no-auto-index
 
 ## Environment Variables
 
-CodeRAG MCP supports environment variables for configuration.
+Locus MCP supports environment variables for configuration.
 
 ### OPENAI_API_KEY
 
@@ -250,7 +250,7 @@ npx -y @sylphx/locus --root=/path/to/project
 
 ## Verifying Installation
 
-After adding CodeRAG MCP to your configuration:
+After adding Locus MCP to your configuration:
 
 1. **Restart your AI assistant** (Claude Desktop, Cursor, etc.)
 

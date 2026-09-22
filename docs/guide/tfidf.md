@@ -1,6 +1,6 @@
 # TF-IDF and BM25
 
-CodeRAG uses BM25, an improved version of TF-IDF, for keyword-based search. This page explains the mathematical foundations and implementation details.
+Locus uses BM25, an improved version of TF-IDF, for keyword-based search. This page explains the mathematical foundations and implementation details.
 
 ## Term Frequency (TF)
 
@@ -233,7 +233,7 @@ export async function searchDocumentsFromStorage(
 
 ## Code-Aware Tokenization
 
-CodeRAG uses StarCoder2, a code-aware tokenizer that understands programming syntax.
+Locus uses StarCoder2, a code-aware tokenizer that understands programming syntax.
 
 **Why StarCoder2?**
 

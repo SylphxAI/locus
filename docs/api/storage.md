@@ -1,6 +1,6 @@
 # Storage
 
-CodeRAG provides two storage implementations: `PersistentStorage` for SQLite-backed persistence and `MemoryStorage` for in-memory usage.
+Locus provides two storage implementations: `PersistentStorage` for SQLite-backed persistence and `MemoryStorage` for in-memory usage.
 
 ## PersistentStorage
 

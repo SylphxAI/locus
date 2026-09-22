@@ -2,7 +2,7 @@ use std::path::Path;
 use std::sync::{Mutex, OnceLock};
 use std::time::Instant;
 
-use crate::index::{refresh_index, search_index, IndexMode, SearchIndex};
+use crate::index::{find_related_index, refresh_index, search_index, IndexMode, SearchIndex};
 use crate::store::{load_index, save_index};
 use crate::types::ToolEnvelope;
 
@@ -16,6 +16,7 @@ pub fn handle_tool(tool: &str, input: serde_json::Value) -> ToolEnvelope {
     match tool {
         "coderag_index" => coderag_index(input),
         "coderag_search" => coderag_search(input),
+        "locus_find_related" => locus_find_related(input),
         _ => ToolEnvelope::error("UNSUPPORTED_TOOL", &format!("Unknown tool: {tool}")),
     }
 }
@@ -83,6 +84,29 @@ fn resolve_index(root: Option<&str>) -> Result<SearchIndex, ToolEnvelope> {
             Err(message) => Err(ToolEnvelope::error("INDEX_FAILED", &message)),
         },
     }
+}
+
+fn locus_find_related(input: serde_json::Value) -> ToolEnvelope {
+    let started = Instant::now();
+    let path = match input.get("path").and_then(|v| v.as_str()) {
+        Some(value) => value,
+        None => return ToolEnvelope::error("INVALID_PATH", "Missing required field: path"),
+    };
+    let line = match input.get("line").and_then(|v| v.as_u64()) {
+        Some(value) if value > 0 => value as u32,
+        _ => return ToolEnvelope::error("INVALID_LINE", "line must be a positive integer"),
+    };
+    let limit = input.get("limit").and_then(|v| v.as_u64()).unwrap_or(10) as usize;
+    let root = input.get("root").and_then(|v| v.as_str());
+    let index = match resolve_index(root) {
+        Ok(index) => index,
+        Err(envelope) => return envelope,
+    };
+    let results = find_related_index(&index, path, line, limit);
+    if results.is_empty() {
+        return ToolEnvelope::error("NO_RELATED_CHUNKS", "No related chunks found for that location");
+    }
+    ToolEnvelope::ok_search(&format!("{path}:{line}"), results, started.elapsed().as_millis() as u64)
 }
 
 fn coderag_search(input: serde_json::Value) -> ToolEnvelope {

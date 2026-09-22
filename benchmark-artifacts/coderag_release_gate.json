@@ -1,7 +1,7 @@
 {
   "profile": "coderag_release_gate",
-  "generated_at": "2026-07-09T21:39:30.645Z",
-  "artifact_dir": "/home/codex/src/github.com/SylphxAI/coderag/benchmark-artifacts",
+  "generated_at": "2026-09-22T15:13:50.912Z",
+  "artifact_dir": "/tmp/sylphx-blueprint.Ow7tC0/coderag/benchmark-artifacts",
   "status": "passed",
   "summary": {
     "total": 15,
@@ -96,9 +96,12 @@
       }
     },
     {
-      "id": "mcp:rust_adapter_default",
+      "id": "mcp:http_transport_parity",
       "status": "passed",
-      "message": "Default npm bin launches the Rust rmcp MCP server; TypeScript adapter is opt-in only"
+      "message": "HTTP transport integration test proves Rust rmcp codebase_search golden parity over streamable HTTP",
+      "evidence": {
+        "exitCode": 0
+      }
     },
     {
       "id": "parity:frozen_baseline",

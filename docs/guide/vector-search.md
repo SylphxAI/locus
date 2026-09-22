@@ -1,6 +1,6 @@
 # Vector Search
 
-CodeRAG supports semantic search through vector embeddings. Unlike keyword search (BM25), vector search understands meaning and context.
+Locus supports semantic search through vector embeddings. Unlike keyword search (BM25), vector search understands meaning and context.
 
 ## How Embeddings Work
 
@@ -39,7 +39,7 @@ const embedding = [0.023, -0.015, 0.042, ..., 0.011] // 1536 numbers for text-em
 
 ## OpenAI Provider Setup
 
-CodeRAG uses the Vercel AI SDK with OpenAI for embeddings.
+Locus uses the Vercel AI SDK with OpenAI for embeddings.
 
 **Installation:**
 
@@ -101,7 +101,7 @@ const provider = createEmbeddingProvider({
 
 ## Vector Storage (LanceDB)
 
-CodeRAG uses LanceDB for efficient vector storage and retrieval.
+Locus uses LanceDB for efficient vector storage and retrieval.
 
 **Why LanceDB?**
 
@@ -144,7 +144,7 @@ interface VectorDocument {
 
 **Chunk-level embeddings:**
 
-CodeRAG generates one embedding per chunk (not per file):
+Locus generates one embedding per chunk (not per file):
 
 ```typescript
 // Vector ID format: chunk://path:startLine-endLine
@@ -243,10 +243,10 @@ export const cosineSimilarity = (vecA: number[], vecB: number[]): number => {
 
 **LanceDB distance:**
 
-LanceDB uses L2 (Euclidean) distance by default. CodeRAG converts to similarity:
+LanceDB uses optional semantics (Euclidean) distance by default. Locus converts to similarity:
 
 ```typescript
-// LanceDB returns L2 distance
+// LanceDB returns optional semantics distance
 const distance = result._distance // e.g., 0.5
 
 // Convert to similarity score
@@ -308,7 +308,7 @@ Batch generation is more efficient (single API call).
 
 ## Mock Provider
 
-For development and testing, CodeRAG includes a mock embedding provider.
+For development and testing, Locus includes a mock embedding provider.
 
 **When to use:**
 
@@ -336,7 +336,7 @@ const embedding = await mockProvider.generateEmbedding('test')
 
 **Auto-detection:**
 
-If `OPENAI_API_KEY` is not set, CodeRAG automatically uses mock provider:
+If `OPENAI_API_KEY` is not set, Locus automatically uses mock provider:
 
 ```typescript
 const provider = await getDefaultEmbeddingProvider()

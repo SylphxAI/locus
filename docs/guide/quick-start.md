@@ -1,6 +1,6 @@
 # Quick Start
 
-Get up and running with CodeRAG in 5 minutes.
+Get up and running with Locus in 5 minutes.
 
 ## Basic Usage
 

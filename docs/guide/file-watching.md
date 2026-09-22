@@ -1,6 +1,6 @@
 # File Watching
 
-CodeRAG provides real-time file watching using @parcel/watcher for automatic index updates when files change.
+Locus provides real-time file watching using @parcel/watcher for automatic index updates when files change.
 
 ## @parcel/watcher Usage
 
@@ -36,7 +36,7 @@ File watchers emit events immediately, but multiple events often occur for a sin
 
 **Debouncing behavior:**
 
-CodeRAG waits 500ms after the last event before processing changes. This consolidates rapid-fire events into a single update.
+Locus waits 500ms after the last event before processing changes. This consolidates rapid-fire events into a single update.
 
 **Example without debouncing:**
 
@@ -96,7 +96,7 @@ private handleFileChange(type: 'add' | 'change' | 'unlink', absolutePath: string
 
 ## Incremental Updates
 
-When files change, CodeRAG updates only affected chunks rather than rebuilding the entire index.
+When files change, Locus updates only affected chunks rather than rebuilding the entire index.
 
 **Update algorithm:**
 
@@ -164,11 +164,11 @@ function simpleHash(content: string): string {
 
 ## Event Handling
 
-@parcel/watcher emits events for file system changes. CodeRAG maps these to index operations.
+@parcel/watcher emits events for file system changes. Locus maps these to index operations.
 
 **Event types:**
 
-| Watcher Event | CodeRAG Type | Action |
+| Watcher Event | Locus Type | Action |
 |---------------|--------------|--------|
 | `create` | `add` | Index new file |
 | `update` | `change` | Re-index changed file |
@@ -286,7 +286,7 @@ const isWatching = indexer.isWatchEnabled()
 
 ## Ignore Patterns
 
-CodeRAG respects .gitignore and custom ignore patterns.
+Locus respects .gitignore and custom ignore patterns.
 
 **Gitignore support:**
 

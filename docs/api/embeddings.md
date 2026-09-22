@@ -1,6 +1,6 @@
 # Embedding Providers
 
-CodeRAG supports multiple embedding providers for semantic vector search. Providers use the Vercel AI SDK with OpenAI-compatible APIs.
+Locus supports multiple embedding providers for semantic vector search. Providers use the Vercel AI SDK with OpenAI-compatible APIs.
 
 ## createEmbeddingProvider()
 
