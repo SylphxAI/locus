@@ -1,6 +1,6 @@
 # IDE Integration Guide
 
-This guide provides step-by-step setup instructions for using CodeRAG MCP with different AI-powered development tools.
+This guide provides step-by-step setup instructions for using Locus MCP with different AI-powered development tools.
 
 ## Claude Desktop
 
@@ -77,7 +77,7 @@ Add your OpenAI API key to enable natural language queries:
 
 ### Multiple Projects
 
-Configure multiple CodeRAG instances:
+Configure multiple Locus instances:
 
 ```json
 {
@@ -144,7 +144,7 @@ Cursor is an AI-powered code editor built on VS Code.
 
 2. **Edit mcp.json**
 
-   Add CodeRAG MCP configuration:
+   Add Locus MCP configuration:
 
    ```json
    {
@@ -318,7 +318,7 @@ Windsurf is an AI-powered development environment by Codeium.
 
 2. **Edit mcp_config.json**
 
-   Add CodeRAG configuration:
+   Add Locus configuration:
 
    ```json
    {
@@ -416,7 +416,7 @@ claude mcp add coderag -- npx -y @sylphx/locus --root=/path/to/project
 
 ## Other MCP Clients
 
-CodeRAG MCP works with any MCP-compatible client. General setup pattern:
+Locus MCP works with any MCP-compatible client. General setup pattern:
 
 ### Generic MCP Configuration
 
@@ -444,7 +444,7 @@ CodeRAG MCP works with any MCP-compatible client. General setup pattern:
 ### Integration Steps
 
 1. Locate client's MCP configuration file (usually `~/.client-name/mcp.json`)
-2. Add CodeRAG server entry
+2. Add Locus server entry
 3. Restart client
 4. Test with codebase search query
 
@@ -600,7 +600,7 @@ Most MCP clients log server output. Check these locations:
 
 ### Test Server Manually
 
-Run CodeRAG MCP outside the client:
+Run Locus MCP outside the client:
 
 ```bash
 npx @sylphx/locus --root=/path/to/project

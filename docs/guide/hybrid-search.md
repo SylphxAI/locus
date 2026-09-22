@@ -87,7 +87,7 @@ function mergeSearchResults(
 
 ## When to Use Each Mode
 
-CodeRAG supports three search modes: vector-only, BM25-only, and hybrid.
+Locus supports three search modes: vector-only, BM25-only, and hybrid.
 
 ### Vector Search (vectorWeight = 1.0)
 

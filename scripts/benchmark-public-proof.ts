@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Reproducible public benchmark for CodeRAG README claims.
+ * Reproducible public benchmark for Locus README claims.
  * Indexes fixtures/benchmark-corpus, runs hybrid TF-IDF search 20x, prints p50 latency.
  */
 
@@ -101,7 +101,7 @@ async function main(): Promise<void> {
 
 	console.log(JSON.stringify(report, null, 2))
 	console.error('')
-	console.error('CodeRAG public benchmark proof')
+	console.error('Locus public benchmark proof')
 	console.error(
 		`Corpus: ${fixtureFileCount} fixture .ts files, ${indexedFiles} indexed files, ${status.totalChunks} chunks`
 	)

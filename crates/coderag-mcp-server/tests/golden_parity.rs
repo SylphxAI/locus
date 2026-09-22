@@ -10,7 +10,7 @@ fn repo_root() -> PathBuf {
 }
 
 fn resolve_cli_binary() -> PathBuf {
-    for relative in ["target/release/locus-cli", "target/debug/locus-cli"] {
+    for relative in ["target/release/coderag-cli", "target/debug/coderag-cli", "target/release/locus-cli", "target/debug/locus-cli"] {
         let candidate = repo_root().join(relative);
         if candidate.is_file() {
             return candidate;

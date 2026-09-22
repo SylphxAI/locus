@@ -1,319 +1,97 @@
-<div align="center">
-
 # Locus
 
-Canonical package: **`@sylphx/locus`** · bin **`locus`**
+### The exact code chunk for the job
 
-<p align="center">
-  <img src="https://mark.sylphx.com/api/v1/banner?type=glass&theme=tokyonight&text=locus&desc=Local-first+hybrid+code+search+for+agents+%E2%80%94+AST+chunks%2C+TF-IDF%2C+optional+vectors&height=200&animation=rise&credit=0" alt="Locus — Sylphx Mark banner" width="100%" />
-</p>
-
-### Your agent searched the codebase. **Did it find the right code?**
-
-**Locus** (repository `coderag`, canonical package `@sylphx/locus`; core library `@sylphx/coderag`) —
-local-first hybrid code search for AI assistants. One MCP call indexes your repo and returns
-**semantic AST chunks** — functions, classes, and methods — not noisy grep dumps or slow cloud pipelines.
-
-[![npm brand](https://img.shields.io/npm/v/@sylphx/locus?style=flat-square&label=locus)](https://www.npmjs.com/package/@sylphx/locus)
-[![npm core](https://img.shields.io/npm/v/@sylphx/coderag?style=flat-square&label=core)](https://www.npmjs.com/package/@sylphx/coderag)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
-
-**Local-first** · **MCP + CLI + SDK** · **Hybrid TF-IDF + Vector** · **Rust rmcp** · **Evidence locators**
-
-[⭐ Star this repo](https://github.com/SylphxAI/coderag) if agents should find code with evidence, not guess from keyword hits.
-· [Quick start](#quick-start) · [See it work](#see-it-work) · [Why not grep alone?](#why-not-grep-alone)
-· [Product docs](#product-docs) · [Roadmap](docs/roadmap/sota-family-roadmap.md)
-
-This repository is product SSOT. Sibling agent tools live in separate repos
-(Citra · Iris · Cue · Spine · Lookout · Locus).
-
-</div>
-
----
-
-## Zero-config (no install)
+Locus gives coding agents fast, local code search that returns complete,
+implementation-ready chunks instead of grep dumps or whole-file guesses.
 
 ```bash
 npx -y @sylphx/locus --root=/absolute/path/to/project
 ```
 
-No Docker. No Chroma. No embedding API required for the default TF-IDF path.  
-**Live:** `@sylphx/locus@0.5.2` · bin **`locus` only** · brand-sole `serverInfo.name=locus`.
-
-| Setup | Command |
-| --- | --- |
-| Zero-config MCP | `npx -y @sylphx/locus --root=/abs/path` |
-| Claude Code | `claude mcp add locus -- npx -y @sylphx/locus --root=/abs/path` |
-| Cursor / Desktop | `"command":"npx","args":["-y","@sylphx/locus","--root=/abs/path"]` |
-
-## Product docs
-
-| Doc | Purpose |
-| --- | --- |
-| [docs/POSITIONING.md](docs/POSITIONING.md) | Strategic positioning (Locus vs Spine) |
-| [docs/COMPETITIVE.md](docs/COMPETITIVE.md) | Peer anchors and wedge |
-| [docs/EVIDENCE_CONTRACT.md](docs/EVIDENCE_CONTRACT.md) | Evidence = result contract (not a tool name) |
-| [docs/TOOL_SURFACE.md](docs/TOOL_SURFACE.md) | Few clear tools policy |
-| [docs/LOCAL_FIRST_FRONTIER.md](docs/LOCAL_FIRST_FRONTIER.md) | Local-first / zero-config / Rust-first |
-| [docs/PRODUCT_INDEPENDENCE.md](docs/PRODUCT_INDEPENDENCE.md) | This repo is SSOT |
-| [docs/BRAND_PUBLISH.md](docs/BRAND_PUBLISH.md) | Brand-sole npm ids |
-| [docs/IPPB.md](docs/IPPB.md) | Independent public product bar |
-| [docs/PUBLISH.md](docs/PUBLISH.md) | npm/git publish status |
-
-## Locus vs Spine
-
-| | **Locus** | **Spine** |
-| --- | --- | --- |
-| Job | Find the right **code chunk** | Map **architecture** (path / trace / impact) |
-| Repo | [coderag](https://github.com/SylphxAI/coderag) | [architecture-reader-mcp](https://github.com/SylphxAI/architecture-reader-mcp) |
-| Primary tool | `codebase_search` | `architecture_*` |
-| Brand npm | `@sylphx/locus` | `@sylphx/spine` |
-
-## Why Locus wins for agents
-
-1. **Right chunk, not a folder dump** — AST-aware retrieval agents can patch from.
-2. **Zero-config** — `npx -y @sylphx/locus --root=…` (no vector DB required by default).
-3. **Explainable scores** — TF-IDF + matched terms, not opaque cloud ranks.
-4. **Local-first** — code never has to leave the machine for baseline search.
-5. **Pairs with Spine** — Locus finds *code*; Spine maps *architecture*.
-
-## The problem
-
-Agents search codebases thousands of times per session. Most paths give you one
-of two bad outcomes:
-
-1. **grep/ripgrep** — fast, but literal. Misses `authenticateUser` when you ask
-   for "login flow". Returns whole files, not the function you need.
-2. **Cloud RAG** — semantic, but needs Docker, vector DBs, embedding APIs, and
-   10–30s cold starts before the first search.
-
-The model still guesses which snippet matters. Wrong chunk → wrong patch → wasted
-context.
-
-**Locus is built for the moment your agent needs the right code block, not a
-directory of keyword hits.**
-
-## Why not grep alone?
-
-| | grep/ripgrep | Cloud RAG | Locus |
-| --- | --- | --- | --- |
-| **Semantic understanding** | ❌ Literal match | ✅ Embeddings | ✅ TF-IDF + optional vectors |
-| **Zero external deps** | ✅ | ❌ Vector DB + embed API | ✅ Local by default |
-| **Offline support** | ✅ | ❌ | ✅ |
-| **Result shape** | Whole files / lines | Often whole files | AST chunks (functions, classes) |
-| **Agent setup** | Shell tool | Docker + services | `npx -y @sylphx/locus` |
-
-Search latency and indexing throughput: reproduce with
-[`bun run benchmark:public-proof`](#benchmark-proof) — do not trust hand-waved
-ms claims.
-
-Full comparison: [how search works](docs/guide/how-search-works.md).
-
-## See it work
-
-**Install once. Point at your repo.**
+For Claude Code:
 
 ```bash
 claude mcp add locus -- npx -y @sylphx/locus --root=/absolute/path/to/project
-# transitional (expand–contract still valid):
 ```
 
-Search with the `codebase_search` tool:
+## The fastest useful workflow
+
+Ask a natural-language question:
 
 ```json
 {
-  "query": "user authentication login",
-  "limit": 5,
-  "file_extensions": [".ts", ".tsx"],
-  "exclude_paths": ["node_modules", "dist"]
+  "query": "where is user authentication enforced?",
+  "limit": 5
 }
 ```
 
-Returns ranked chunks — not entire files:
+Locus returns ranked AST chunks with file paths, line ranges, symbol names,
+score explanations, freshness, and explicit gaps.
 
-```markdown
-# Search: "user authentication login" (3 results)
+## Jobs Locus is built for
 
-## src/auth/login.ts:1-12
-```typescript
-export async function authenticate(username: string, password: string) {
-  const user = await findUserByEmail(username)
-  return validatePassword(user, password)
-}
-```
-```
+| Ask your agent | Locus returns |
+| --- | --- |
+| “Where is this behavior implemented?” | `codebase_search` |
+| “What code is related to this function?” | `find_related` |
+| “Search across these repositories.” | cross-repo search |
+| “Find the implementation, not tests or declarations.” | ranked code chunks |
+| “Give me enough context to edit safely.” | compact, deduplicated results |
+
+## Tool surface
+
+| Tool | Purpose |
+| --- | --- |
+| `codebase_search` | Hybrid local search over code chunks |
+| `find_related` | Find related chunks from a known file and line |
+
+The public surface stays small. Indexing is cached locally and refreshed when
+the repository changes. Optional embeddings are opt-in and never required for
+the default path.
+
+## Predictable defaults
+
+Locus does not hide expensive work behind “auto”.
+
+- `fast` is the default local TF-IDF and AST path.
+- `quality` enables optional vectors and reranking when configured.
+- `research` is not a Locus mode; use a separate web tool for external sources.
+- No Docker, vector database, or API key is required.
+- Generated files, dependencies, and build output are excluded by default.
 
 ## Why agents use it
 
-| Need | What you get |
+- AST boundaries return functions, classes, and methods.
+- Hybrid ranking combines lexical and semantic evidence when available.
+- Results include score components instead of opaque ordering.
+- Token budgets and dedup keep context small.
+- Local indexes keep code on the machine.
+
+## Companion MCP tools
+
+| Product | Job |
 | --- | --- |
-| Find implementation | AST chunks at semantic boundaries (functions, classes, methods) |
-| Keyword + meaning | Hybrid TF-IDF with optional OpenAI embeddings |
-| Fast iteration | Local index, incremental updates, file watching |
-| Low setup | MCP server via `npx` — no Docker or ChromaDB required |
-| Ship with proof | ~200 tests, reproducible public benchmark script |
+| [Citra](https://github.com/SylphxAI/citra) | PDF answers with page-level proof |
+| [Iris](https://github.com/SylphxAI/iris) | Image facts and pixel evidence |
+| [Cue](https://github.com/SylphxAI/cue) | Video timelines and timestamp evidence |
+| [Spine](https://github.com/SylphxAI/spine) | Repository architecture and impact |
+| [Lookout](https://github.com/SylphxAI/lookout) | Web research with source excerpts |
 
-## Quick Start
-
-### Claude Code (recommended)
-
-```bash
-claude mcp add locus -- npx -y @sylphx/locus --root=/absolute/path/to/project
-# transitional (expand–contract still valid):
-```
-
-### Claude Desktop
-
-Add to `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "coderag": {
-      "command": "npx",
-      "args": ["-y", "@sylphx/locus", "--root=/absolute/path/to/project"]
-    }
-  }
-}
-```
-
-### Any MCP Client
-
-```bash
-npx -y @sylphx/locus --root=/absolute/path/to/project
-```
-
-Need Cursor, VS Code, Windsurf, or library usage? See the
-[installation guide](docs/guide/installation.md) and [MCP docs](docs/mcp/overview.md).
-
-### As a Library
-
-```bash
-bun add @sylphx/coderag
-```
-
-```typescript
-import { CodebaseIndexer, PersistentStorage } from '@sylphx/coderag'
-
-const storage = new PersistentStorage({ codebaseRoot: './my-project' })
-const indexer = new CodebaseIndexer({ codebaseRoot: './my-project', storage })
-
-await indexer.index({ watch: true })
-const results = await indexer.search('authentication logic', { limit: 10 })
-```
-
----
-
-## MCP Tool: `codebase_search`
-
-| Parameter | Type | Default | Description |
-| --- | --- | --- | --- |
-| `query` | string | — | Search query (required) |
-| `limit` | number | 10 | Max results |
-| `include_content` | boolean | true | Include code snippets |
-| `file_extensions` | string[] | — | Filter by extension |
-| `path_filter` | string | — | Filter by path pattern |
-| `exclude_paths` | string[] | — | Exclude paths |
-
-Full tool reference: [docs/mcp/tools.md](docs/mcp/tools.md).
-
----
-
-## Benchmark Proof
-
-Performance claims in this README are backed only by the checked-in public
-benchmark script — not hand-waved marketing numbers.
-
-```bash
-bun run benchmark:public-proof
-```
-
-The script indexes `fixtures/benchmark-corpus/` (30 TypeScript files), runs
-hybrid TF-IDF search 20 times (3 warmup), and prints indexing throughput plus
-search p50/min/max latency.
-
-See [benchmark proof](docs/benchmark.md) for methodology and latest reproduced
-results.
-
----
-
-## Packages
-
-| Package | Description | Install |
-| --- | --- | --- |
-| [@sylphx/coderag](packages/core) | Core search library | `npm i @sylphx/coderag` |
-| [@sylphx/locus](packages/mcp-server) | MCP server for AI assistants | `npx -y @sylphx/locus` |
-
----
-
-## Documentation
-
-| Topic | Link |
-| --- | --- |
-| Docs site | [coderag.sylphx.com](https://coderag.sylphx.com) |
-| Getting started | [docs/guide/getting-started.md](docs/guide/getting-started.md) |
-| MCP server | [docs/mcp/overview.md](docs/mcp/overview.md) |
-| How search works | [docs/guide/how-search-works.md](docs/guide/how-search-works.md) |
-| Benchmark proof | [docs/benchmark.md](docs/benchmark.md) |
-| Stop code-search guessing | [docs/articles/stop-code-search-guessing.md](docs/articles/stop-code-search-guessing.md) |
-| API reference | [docs/api/overview.md](docs/api/overview.md) |
-
----
-
-## Security model
-
-- **Root confinement** — `--root` pins indexing and search to one repository tree.
-- **Exclude paths** — `exclude_paths` and default ignores skip `node_modules`, build output, and VCS metadata.
-- **Local-first** — TF-IDF indexing runs on your machine; embeddings are optional and caller-configured.
-- **Evidence fields** — results include file path, line range, symbol, score route, and index freshness for verification.
-
-Example MCP request: [`examples/codebase-search-request.json`](examples/codebase-search-request.json).
-
----
+Locus finds the code chunk; Spine maps the repository architecture. Each product
+is independent, so install only the tools your agent needs.
 
 ## Development
 
 ```bash
-git clone https://github.com/SylphxAI/coderag.git
-cd coderag
 bun install
 bun run build
 bun test
-```
-
-Useful checks:
-
-```bash
-bun run lint
-bun run typecheck
-bun run docs:build
+cargo test
 bun run benchmark:public-proof
+bun run benchmark:release-gate
 ```
-
----
-
-## Help this reach more builders
-
-If wrong code snippets have wasted your agent context, your edits, or your trust
-in search results, you are exactly who this project is for.
-
-**[⭐ Star the repo](https://github.com/SylphxAI/coderag)** — it is the fastest
-way to help more agent builders find chunk-level code search. Share it in your
-MCP client setup, team wiki, or agent stack README.
-
-### Discovery (in progress)
-
-| Channel | Status |
-| --- | --- |
-| [Official MCP Registry](https://registry.modelcontextprotocol.io/) | Not listed yet — no `server.json` publish workflow in this repo |
-| [Glama MCP directory](https://glama.ai/mcp/servers) | Not listed yet |
-| [mcpservers.org submit](https://mcpservers.org/submit) | Not listed yet — free web-form submission |
-| [mcp.so](https://mcp.so) | Not listed yet |
-
-Know another MCP directory? [Open an issue](https://github.com/SylphxAI/coderag/issues/new) with the link.
-
----
 
 ## License
 
-MIT © [SylphxAI](https://github.com/SylphxAI)
+MIT

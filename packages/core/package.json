@@ -1,7 +1,7 @@
 {
 	"name": "@sylphx/coderag",
-	"version": "0.1.27",
-	"description": "Locus core \u2014 local-first hybrid code search (TF-IDF default; optional vector/OpenAI/HF via optionalDependencies)",
+	"version": "0.2.0",
+	"description": "Locus core — local-first hybrid code search (TF-IDF default; optional vector/OpenAI/HF via optionalDependencies)",
 	"type": "module",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -100,7 +100,8 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/SylphxAI/coderag.git",
+		"url": "https://github.com/SylphxAI/locus.git",
 		"directory": "packages/core"
-	}
+	},
+	"homepage": "https://sylphxai.github.io/locus/"
 }

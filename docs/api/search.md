@@ -1,6 +1,6 @@
 # Search Functions
 
-CodeRAG provides three search modes: hybrid (combines vector and TF-IDF), semantic (vector only), and keyword (TF-IDF only).
+Locus provides three search modes: hybrid (combines vector and TF-IDF), semantic (vector only), and keyword (TF-IDF only).
 
 ## hybridSearch()
 

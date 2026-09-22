@@ -29,3 +29,5 @@ packages/mcp-server/bin/native/coderag-cli
 packages/mcp-server/npm/*/coderag-mcp-server
 packages/mcp-server/npm/*/coderag-cli
 artifacts/
+bin/native/*
+packages/mcp-server/bin/native/*

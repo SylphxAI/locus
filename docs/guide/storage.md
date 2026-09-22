@@ -1,6 +1,6 @@
 # Persistent Storage
 
-CodeRAG uses SQLite with LibSQL for persistent, memory-efficient storage. This enables incremental updates and low-memory operation.
+Locus uses SQLite with LibSQL for persistent, memory-efficient storage. This enables incremental updates and low-memory operation.
 
 ## SQLite with LibSQL
 
@@ -52,7 +52,7 @@ const storage = new PersistentStorage({
 
 ## Database Schema
 
-CodeRAG uses a chunk-based schema optimized for granular search.
+Locus uses a chunk-based schema optimized for granular search.
 
 **Schema overview:**
 
@@ -225,7 +225,7 @@ Only top candidates are loaded into memory, not the entire index.
 
 ## Migrations
 
-CodeRAG uses Drizzle ORM for schema migrations.
+Locus uses Drizzle ORM for schema migrations.
 
 **Migration system:**
 
@@ -296,7 +296,7 @@ Migrations are idempotent (safe to run multiple times).
 
 ## Batch Operations
 
-CodeRAG uses batch operations for efficient bulk updates.
+Locus uses batch operations for efficient bulk updates.
 
 **Batch file storage:**
 
@@ -373,7 +373,7 @@ for (let i = 0; i < scores.length; i += 300) {
 
 ## Incremental Updates
 
-CodeRAG supports incremental updates for efficient file watching.
+Locus supports incremental updates for efficient file watching.
 
 **Update flow:**
 
@@ -388,7 +388,7 @@ CodeRAG supports incremental updates for efficient file watching.
 
 ```typescript
 // User edits src/utils.ts
-// CodeRAG detects change via file watcher
+// Locus detects change via file watcher
 
 // 1. Get terms for old chunks (for IDF recalculation)
 const affectedTerms = await storage.getTermsForFiles(['src/utils.ts'])

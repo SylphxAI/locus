@@ -22,7 +22,7 @@ pub struct CodebaseSearchRequest {
 }
 
 pub const SERVER_NAME: &str = "locus";
-pub const SERVER_VERSION: &str = "0.5.2";
+pub const SERVER_VERSION: &str = "0.6.0";
 pub const SERVER_INSTRUCTIONS: &str =
     "Locus MCP server (Rust rmcp transport). Use codebase_search for deterministic Rust TF-IDF retrieval with score explainability.";
 
@@ -42,6 +42,24 @@ impl CoderagMcp {
 #[tool_router]
 impl CoderagMcp {
     #[tool(
+        description = "Find code chunks related to a known file and line by local token overlap."
+    )]
+    pub fn find_related(
+        &self,
+        Parameters(request): Parameters<FindRelatedRequest>,
+    ) -> Result<rmcp::model::CallToolResult, ErrorData> {
+        let mut args = json!({
+            "path": request.path,
+            "line": request.line,
+            "limit": request.limit.unwrap_or(10),
+        });
+        if let Some(root) = request.root {
+            args["root"] = json!(root);
+        }
+        codebase_search::find_related(args)
+    }
+
+    #[tool(
         description = "Search the codebase with Rust TF-IDF retrieval. Returns ranked hits with path, score, matched terms, and score components."
     )]
     pub fn codebase_search(
@@ -59,6 +77,18 @@ impl CoderagMcp {
     }
 }
 
+#[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
+pub struct FindRelatedRequest {
+    #[schemars(description = "Repository root path; defaults to CODERAG_ROOT when omitted")]
+    pub root: Option<String>,
+    #[schemars(description = "Known source path")]
+    pub path: String,
+    #[schemars(description = "Known source line")]
+    pub line: u64,
+    #[schemars(description = "Maximum number of related chunks")]
+    pub limit: Option<u64>,
+}
+
 #[tool_handler]
 impl ServerHandler for CoderagMcp {
     fn get_info(&self) -> ServerInfo {
@@ -69,7 +99,7 @@ impl ServerHandler for CoderagMcp {
                     .with_description(
                         "Locus — local-first hybrid code search MCP (Rust rmcp transport)",
                     )
-                    .with_website_url("https://github.com/SylphxAI/coderag"),
+                    .with_website_url("https://github.com/SylphxAI/locus"),
             )
     }
 }
@@ -82,6 +112,7 @@ mod tests {
         let tools = CoderagMcp::new().tool_router.list_all();
         let names: Vec<_> = tools.iter().map(|tool| tool.name.to_string()).collect();
         assert!(names.contains(&"codebase_search".to_string()));
+        assert!(names.contains(&"find_related".to_string()));
     }
 
     #[test]

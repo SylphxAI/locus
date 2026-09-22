@@ -1,6 +1,6 @@
 {
 	"name": "@sylphx/locus-linux-arm64-gnu",
-	"version": "0.5.2",
+	"version": "0.6.0",
 	"description": "Locus native MCP server binary for linux-arm64-gnu",
 	"os": [
 		"linux"
@@ -22,10 +22,11 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/SylphxAI/coderag.git",
+		"url": "https://github.com/SylphxAI/locus.git",
 		"directory": "packages/mcp-server/npm/linux-arm64-gnu"
 	},
 	"engines": {
 		"node": ">=18.0.0"
-	}
+	},
+	"homepage": "https://sylphxai.github.io/locus/"
 }

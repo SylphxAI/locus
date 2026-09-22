@@ -2,12 +2,12 @@
 layout: doc
 
 title: Benchmark Proof
-description: Reproducible public benchmark for CodeRAG — indexing throughput and search latency on a fixed in-repo corpus.
+description: Reproducible public benchmark for Locus — indexing throughput and search latency on a fixed in-repo corpus.
 ---
 
 # Benchmark Proof
 
-CodeRAG public performance claims are backed by a single checked-in script and a
+Locus public performance claims are backed by a single checked-in script and a
 fixed fixture corpus — not hand-tuned marketing numbers.
 
 ## What Gets Measured

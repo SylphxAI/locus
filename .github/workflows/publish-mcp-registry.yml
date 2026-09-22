@@ -1,0 +1,44 @@
+name: Publish to MCP Registry
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Published npm version to register'
+        required: true
+        default: ''
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: sylphx-linux-standard
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.0'
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+      - name: Validate source and npm readback
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          VERSION="${REQUESTED_VERSION:-$(jq -r .version server.json)}"
+          PKG_VERSION="$(jq -r '.version // empty' package.json)"
+          if [ -z "$PKG_VERSION" ] || [ "$PKG_VERSION" = "0.0.0" ]; then PKG_VERSION="$(jq -r .version packages/mcp-server/package.json)"; fi
+          test "$PKG_VERSION" = "$VERSION"
+          test "$(jq -r .version server.json)" = "$VERSION"
+          test "$(jq -r '.packages[0].version' server.json)" = "$VERSION"
+          PKG="$(jq -r '.packages[0].identifier' server.json)"
+          test "$(npm view "$PKG@$VERSION" version)" = "$VERSION"
+      - run: ./mcp-publisher validate
+      - run: ./mcp-publisher login github-oidc
+      - run: ./mcp-publisher publish

@@ -1,10 +1,10 @@
 # How Search Works
 
-CodeRAG uses chunk-level indexing with BM25 scoring to deliver fast, accurate code search. Unlike traditional file-level search, CodeRAG operates at the granularity of individual code blocks (functions, classes, etc.).
+Locus uses chunk-level indexing with BM25 scoring to deliver fast, accurate code search. Unlike traditional file-level search, Locus operates at the granularity of individual code blocks (functions, classes, etc.).
 
 ## Chunk-Level Indexing
 
-CodeRAG indexes code at the chunk level rather than the file level. Each chunk represents a semantic unit extracted through AST parsing.
+Locus indexes code at the chunk level rather than the file level. Each chunk represents a semantic unit extracted through AST parsing.
 
 **Why chunk-level?**
 
@@ -14,7 +14,7 @@ CodeRAG indexes code at the chunk level rather than the file level. Each chunk r
 
 **Example:**
 
-For a TypeScript file with 3 functions, CodeRAG creates 3 separate searchable chunks:
+For a TypeScript file with 3 functions, Locus creates 3 separate searchable chunks:
 
 ```typescript
 // File: utils.ts
@@ -40,7 +40,7 @@ Each chunk is indexed independently with its own TF-IDF vector.
 
 ## StarCoder2 Tokenization
 
-CodeRAG uses the StarCoder2 tokenizer for code-aware tokenization. This tokenizer understands code syntax and produces better tokens than generic text tokenizers.
+Locus uses the StarCoder2 tokenizer for code-aware tokenization. This tokenizer understands code syntax and produces better tokens than generic text tokenizers.
 
 **Advantages:**
 
@@ -102,7 +102,7 @@ For a query `"async function error"`, BM25 scores each chunk by:
 
 ## Query Caching
 
-CodeRAG caches search results using an LRU (Least Recently Used) cache to avoid re-executing identical searches.
+Locus caches search results using an LRU (Least Recently Used) cache to avoid re-executing identical searches.
 
 **Cache parameters:**
 
@@ -172,7 +172,7 @@ End-to-end search process:
 
 **SQL-based search:**
 
-CodeRAG uses SQL for memory-efficient search:
+Locus uses SQL for memory-efficient search:
 
 ```typescript
 // Query chunks by terms

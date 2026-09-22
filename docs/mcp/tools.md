@@ -1,6 +1,6 @@
 # Tools Reference
 
-CodeRAG MCP provides a single tool: `codebase_search`
+Locus MCP provides a single tool: `codebase_search`
 
 ## codebase_search
 

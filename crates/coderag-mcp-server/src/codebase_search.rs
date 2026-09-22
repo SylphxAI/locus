@@ -43,3 +43,31 @@ pub fn codebase_search(args: Value) -> Result<CallToolResult, rmcp::ErrorData> {
 
     Ok(search)
 }
+pub fn find_related(args: Value) -> Result<CallToolResult, rmcp::ErrorData> {
+    let root = args
+        .get("root")
+        .and_then(Value::as_str)
+        .map(str::to_string)
+        .or_else(|| std::env::var("CODERAG_ROOT").ok())
+        .ok_or_else(|| rmcp::ErrorData::invalid_params("root is required", None))?;
+    let path = args
+        .get("path")
+        .and_then(Value::as_str)
+        .ok_or_else(|| rmcp::ErrorData::invalid_params("path is required", None))?;
+    let line = args
+        .get("line")
+        .and_then(Value::as_u64)
+        .ok_or_else(|| rmcp::ErrorData::invalid_params("line is required", None))?;
+    let limit = args.get("limit").and_then(Value::as_u64).unwrap_or(10);
+    let _ = cli_bridge::invoke_cli_tool("coderag_index", json!({ "root": root, "mode": "auto" }))?;
+    let mut result = cli_bridge::invoke_cli_tool(
+        "locus_find_related",
+        json!({ "root": root, "path": path, "line": line, "limit": limit }),
+    )?;
+    if let Some(structured) = result.structured_content.as_mut() {
+        structured["tool"] = json!("find_related");
+        structured["route"] = json!("rust-related");
+        structured["engine"] = json!(coderag_core::ENGINE_NAME);
+    }
+    Ok(result)
+}

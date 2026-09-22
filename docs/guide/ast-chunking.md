@@ -1,10 +1,10 @@
 # AST-Based Chunking
 
-CodeRAG uses Abstract Syntax Tree (AST) parsing to split code into semantic chunks rather than arbitrary character or line-based splits. This produces more meaningful search units.
+Locus uses Abstract Syntax Tree (AST) parsing to split code into semantic chunks rather than arbitrary character or line-based splits. This produces more meaningful search units.
 
 ## How Tree-Sitter Parsers Work
 
-CodeRAG uses Synth parsers (built on tree-sitter) to parse code into AST nodes. Tree-sitter is a parser generator that creates fast, incremental parsers for programming languages.
+Locus uses Synth parsers (built on tree-sitter) to parse code into AST nodes. Tree-sitter is a parser generator that creates fast, incremental parsers for programming languages.
 
 **Key concepts:**
 
@@ -51,7 +51,7 @@ All Synth parsers use async parsing because they're WASM-based (v0.3.x).
 
 ## Semantic Boundaries
 
-Semantic boundaries define where code should be split. CodeRAG chunks code at boundaries defined in the language configuration.
+Semantic boundaries define where code should be split. Locus chunks code at boundaries defined in the language configuration.
 
 **Common boundaries by language:**
 
@@ -233,7 +233,7 @@ for (const chunk of chunks) {
 
 **Fallback behavior:**
 
-If AST parsing fails (unknown language, syntax error), CodeRAG falls back to character-based chunking:
+If AST parsing fails (unknown language, syntax error), Locus falls back to character-based chunking:
 
 ```typescript
 // Fallback chunk
@@ -248,7 +248,7 @@ If AST parsing fails (unknown language, syntax error), CodeRAG falls back to cha
 
 ## Supported Languages
 
-CodeRAG supports 15+ languages through Synth parsers:
+Locus supports 15+ languages through Synth parsers:
 
 **Tier 1 (Full AST support):**
 - JavaScript/TypeScript/JSX/TSX
@@ -270,4 +270,4 @@ CodeRAG supports 15+ languages through Synth parsers:
 **Tier 3 (Specialized):**
 - Protobuf
 
-See [languages.md](/Users/kyle/coderag/docs/guide/languages.md) for full details.
+See [languages.md](/guide/languages.md) for full details.

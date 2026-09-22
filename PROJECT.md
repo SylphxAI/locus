@@ -1,6 +1,6 @@
 # SylphxAI CodeRAG
 
-SylphxAI/coderag is a TypeScript/Bun monorepo for hybrid code search and an MCP server for AI assistant code retrieval.
+SylphxAI/locus is a TypeScript/Bun monorepo for hybrid code search and an MCP server for AI assistant code retrieval.
 
 ## Lifecycle
 

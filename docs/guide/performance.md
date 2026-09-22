@@ -1,10 +1,10 @@
 # Performance Tuning
 
-CodeRAG is optimized for speed and memory efficiency. This guide covers optimization strategies for large codebases.
+Locus is optimized for speed and memory efficiency. This guide covers optimization strategies for large codebases.
 
 ## Memory Optimization
 
-CodeRAG provides multiple strategies to reduce memory usage.
+Locus provides multiple strategies to reduce memory usage.
 
 ### Low Memory Mode
 
@@ -52,7 +52,7 @@ const indexer = new CodebaseIndexer({
 
 ### Chunk-Based Indexing
 
-CodeRAG indexes at the chunk level rather than file level, reducing memory for large files.
+Locus indexes at the chunk level rather than file level, reducing memory for large files.
 
 **Example:**
 
@@ -84,7 +84,7 @@ Chunk-level: Only query candidates loaded (typically 10-50 chunks)
 
 ### Streaming Indexing
 
-CodeRAG processes files in batches to avoid loading everything at once.
+Locus processes files in batches to avoid loading everything at once.
 
 **Batch processing:**
 
@@ -129,7 +129,7 @@ const indexer = new CodebaseIndexer({
 
 ## Batch Sizes
 
-CodeRAG uses batching at multiple levels for efficiency.
+Locus uses batching at multiple levels for efficiency.
 
 ### File Batch Size
 
@@ -237,7 +237,7 @@ const BATCH_SIZE = 300  // 3 fields per row: term, idf, documentFrequency
 
 ## Caching Strategies
 
-CodeRAG uses multiple cache layers for performance.
+Locus uses multiple cache layers for performance.
 
 ### Query Token Cache
 

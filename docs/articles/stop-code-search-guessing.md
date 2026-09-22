@@ -27,7 +27,7 @@ No system prompt fixes the wrong chunk.
 
 ## What chunk-level hybrid search changes
 
-CodeRAG indexes at **AST boundaries** — functions, classes, methods — and ranks
+Locus indexes at **AST boundaries** — functions, classes, methods — and ranks
 with hybrid TF-IDF (plus optional vectors when you want them):
 
 - **Semantic chunks** the agent can read without burning context.
@@ -66,6 +66,6 @@ See [benchmark proof](/benchmark) for methodology.
 
 ## Share this
 
-- [CodeRAG on GitHub](https://github.com/SylphxAI/coderag)
+- [Locus on GitHub](https://github.com/SylphxAI/locus)
 - [MCP server docs](/mcp/overview)
-- [⭐ Star the repo](https://github.com/SylphxAI/coderag) — help other builders stop guessing
+- [⭐ Star the repo](https://github.com/SylphxAI/locus) — help other builders stop guessing

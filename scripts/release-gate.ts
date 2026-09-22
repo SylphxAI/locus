@@ -259,7 +259,7 @@ async function main(): Promise<void> {
 	mkdirSync(artifactDir, { recursive: true })
 	const outputPath = path.join(artifactDir, ARTIFACT_FILE)
 	writeFileSync(outputPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8')
-	console.error(`CodeRAG release gate report written to ${outputPath}`)
+	console.error(`Locus release gate report written to ${outputPath}`)
 
 	if (report.status !== 'passed') {
 		for (const check of report.checks.filter((entry) => entry.status === 'failed')) {

@@ -35,7 +35,7 @@ yarn add @sylphx/coderag
 
 ## Optional Dependencies
 
-CodeRAG uses optional dependencies for language-specific AST parsing. These are automatically installed when needed but can be pre-installed for faster startup:
+Locus uses optional dependencies for language-specific AST parsing. These are automatically installed when needed but can be pre-installed for faster startup:
 
 ### Language Parsers
 
@@ -141,7 +141,7 @@ const indexer = new CodebaseIndexer({
   storage,
 })
 
-console.log('CodeRAG installed successfully!')
+console.log('Locus installed successfully!')
 ```
 
 Run with:
@@ -164,7 +164,7 @@ npm install @sylphx/coderag@latest
 
 ### Tokenizer Download
 
-On first run, CodeRAG downloads the StarCoder2 tokenizer (~4.7MB). This is cached locally after the first download.
+On first run, Locus downloads the StarCoder2 tokenizer (~4.7MB). This is cached locally after the first download.
 
 ```
 [INFO] Loading StarCoder2 tokenizer (4.7MB, one-time download)...

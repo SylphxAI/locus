@@ -377,6 +377,63 @@ fn extract_symbol_spans(content: &str) -> Vec<SymbolSpan> {
     spans
 }
 
+pub fn find_related_index(
+    index: &SearchIndex,
+    path: &str,
+    line: u32,
+    limit: usize,
+) -> Vec<crate::types::SearchHit> {
+    let Some(seed) = index.chunks.iter().find(|chunk| {
+        chunk.path == path && chunk.start_line <= line && line <= chunk.end_line
+    }) else {
+        return Vec::new();
+    };
+    let seed_terms: std::collections::HashSet<&str> = seed.tokens.iter().map(String::as_str).collect();
+    let mut scored: Vec<(f64, &Chunk)> = index
+        .chunks
+        .iter()
+        .filter(|chunk| !std::ptr::eq(*chunk, seed))
+        .map(|chunk| {
+            let overlap = chunk
+                .tokens
+                .iter()
+                .filter(|token| seed_terms.contains(token.as_str()))
+                .count();
+            let union = seed_terms
+                .iter()
+                .copied()
+                .chain(chunk.tokens.iter().map(String::as_str))
+                .collect::<std::collections::HashSet<_>>()
+                .len();
+            let score = if union == 0 { 0.0 } else { overlap as f64 / union as f64 };
+            (score, chunk)
+        })
+        .filter(|(score, _)| *score > 0.0)
+        .collect();
+    scored.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal).then_with(|| a.1.path.cmp(&b.1.path)));
+    scored
+        .into_iter()
+        .take(limit.max(1))
+        .map(|(score, chunk)| crate::types::SearchHit {
+            path: chunk.path.clone(),
+            score,
+            matched_terms: chunk
+                .tokens
+                .iter()
+                .filter(|token| seed_terms.contains(token.as_str()))
+                .take(12)
+                .cloned()
+                .collect(),
+            score_components: Vec::new(),
+            start_line: Some(chunk.start_line),
+            end_line: Some(chunk.end_line),
+            snippet: Some(chunk.text.chars().take(360).collect()),
+            symbol_name: chunk.symbol_name.clone(),
+            chunk_type: Some(chunk.chunk_type.clone()),
+        })
+        .collect()
+}
+
 pub fn search_index(index: &SearchIndex, query: &str, limit: usize) -> Vec<crate::types::SearchHit> {
     let query_terms = tokenize(query);
     if query_terms.is_empty() || index.chunks.is_empty() {

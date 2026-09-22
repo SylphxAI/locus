@@ -10,13 +10,13 @@
         "lefthook": "^2.0.4",
         "turbo": "^2.6.1",
         "typescript": "^7.0.2",
-        "vitepress": "^1.6.4",
+        "vitepress": "1.6.4",
         "vue": "^3.5.25",
       },
     },
     "packages/core": {
       "name": "@sylphx/coderag",
-      "version": "0.1.27",
+      "version": "0.2.0",
       "dependencies": {
         "@libsql/client": "^0.14.0",
         "@parcel/watcher": "^2.5.1",
@@ -58,7 +58,7 @@
     },
     "packages/mcp-server": {
       "name": "@sylphx/locus",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "bin": {
         "locus": "./bin/locus",
       },
@@ -81,19 +81,19 @@
     },
     "packages/mcp-server/npm/darwin-arm64": {
       "name": "@sylphx/locus-darwin-arm64",
-      "version": "0.5.0",
+      "version": "0.6.0",
     },
     "packages/mcp-server/npm/darwin-x64": {
       "name": "@sylphx/locus-darwin-x64",
-      "version": "0.5.0",
+      "version": "0.6.0",
     },
     "packages/mcp-server/npm/linux-arm64-gnu": {
       "name": "@sylphx/locus-linux-arm64-gnu",
-      "version": "0.5.0",
+      "version": "0.6.0",
     },
     "packages/mcp-server/npm/linux-x64-gnu": {
       "name": "@sylphx/locus-linux-x64-gnu",
-      "version": "0.5.0",
+      "version": "0.6.0",
     },
   },
   "packages": {
@@ -770,8 +770,6 @@
     "is-number": ["is-number@7.0.0", "", {}, "sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng=="],
 
     "is-what": ["is-what@5.5.0", "", {}, "sha512-oG7cgbmg5kLYae2N5IVd3jm2s+vldjxJzK1pcu9LfpGuQ93MQSzo0okvRna+7y5ifrD+20FE8FvjusyGaz14fw=="],
-
-    "jiti": ["jiti@2.6.1", "", { "bin": { "jiti": "lib/jiti-cli.mjs" } }, "sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ=="],
 
     "js-base64": ["js-base64@3.7.8", "", {}, "sha512-hNngCeKxIUQiEUN3GPJOkz4wF/YvdUdbNL9hsBcMQTkKzboD7T/q3OYOuuPZLUE6dBxSGpwhk5mwuDud7JVAow=="],
 

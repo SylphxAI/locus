@@ -8,7 +8,7 @@ pub enum ToolRoute {
 
 pub fn route_for_tool(tool: &str) -> Option<ToolRoute> {
     match tool {
-        "codebase_search" | "coderag_index" | "coderag_search" => Some(ToolRoute::RustCore),
+        "codebase_search" | "find_related" | "coderag_index" | "coderag_search" | "locus_find_related" => Some(ToolRoute::RustCore),
         _ => None,
     }
 }
@@ -24,6 +24,7 @@ mod tests {
     #[test]
     fn maps_primary_tools_to_explicit_routes() {
         assert_eq!(route_for_tool("codebase_search"), Some(ToolRoute::RustCore));
+        assert_eq!(route_for_tool("find_related"), Some(ToolRoute::RustCore));
         assert_eq!(route_for_tool("coderag_search"), Some(ToolRoute::RustCore));
         assert_eq!(route_for_tool("coderag_index"), Some(ToolRoute::RustCore));
     }

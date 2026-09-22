@@ -29,7 +29,7 @@
   </g>
 
   <!-- Title -->
-  <text x="230" y="230" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="700" fill="white">CodeRAG</text>
+  <text x="230" y="230" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="700" fill="white">Locus</text>
 
   <!-- Tagline -->
   <text x="230" y="290" font-family="system-ui, -apple-system, sans-serif" font-size="32" fill="#94a3b8">Lightning-fast semantic code search</text>
@@ -46,7 +46,7 @@
   </g>
 
   <!-- URL -->
-  <text x="100" y="560" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#64748b">coderag.sylphx.com</text>
+  <text x="100" y="560" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#64748b">sylphxai.github.io/locus</text>
 
   <!-- Sylphx branding -->
   <text x="1100" y="560" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#64748b" text-anchor="end">by Sylphx</text>

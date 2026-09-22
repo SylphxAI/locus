@@ -1,9 +1,8 @@
 import { defineConfig } from 'vitepress'
 
-const title = 'CodeRAG'
-const description =
-	'Local-first hybrid code search with AST chunking — did your agent find the right code?'
-const url = 'https://coderag.sylphx.com'
+const title = 'Locus'
+const description = 'The exact code chunk for the job — fast local hybrid code search for agents.'
+const url = 'https://sylphxai.github.io/locus'
 const ogImage = `${url}/og-image.png`
 
 export default defineConfig({
@@ -27,7 +26,7 @@ export default defineConfig({
 			{
 				name: 'keywords',
 				content:
-					'code search, RAG, retrieval augmented generation, TF-IDF, BM25, vector search, embeddings, AST, semantic search, MCP, AI assistant',
+					'Locus, code search, retrieval augmented generation, TF-IDF, BM25, vector search, embeddings, AST, semantic search, MCP, AI assistant',
 			},
 		],
 
@@ -39,7 +38,7 @@ export default defineConfig({
 		['meta', { property: 'og:image', content: ogImage }],
 		['meta', { property: 'og:image:width', content: '1200' }],
 		['meta', { property: 'og:image:height', content: '630' }],
-		['meta', { property: 'og:site_name', content: 'CodeRAG' }],
+		['meta', { property: 'og:site_name', content: 'Locus' }],
 		['meta', { property: 'og:locale', content: 'en_US' }],
 
 		// Twitter Card
@@ -59,7 +58,7 @@ export default defineConfig({
 
 	themeConfig: {
 		logo: '/logo.svg',
-		siteTitle: 'CodeRAG',
+		siteTitle: 'Locus',
 
 		nav: [
 			{ text: 'Guide', link: '/guide/getting-started' },
@@ -73,9 +72,9 @@ export default defineConfig({
 						text: 'Stop code-search guessing',
 						link: '/articles/stop-code-search-guessing',
 					},
-					{ text: 'GitHub', link: 'https://github.com/SylphxAI/coderag' },
-					{ text: 'npm', link: 'https://www.npmjs.com/package/@sylphx/coderag' },
-					{ text: 'Changelog', link: 'https://github.com/SylphxAI/coderag/releases' },
+					{ text: 'GitHub', link: 'https://github.com/SylphxAI/locus' },
+					{ text: 'npm', link: 'https://www.npmjs.com/package/@sylphx/locus' },
+					{ text: 'Changelog', link: 'https://github.com/SylphxAI/locus/releases' },
 				],
 			},
 		],
@@ -85,7 +84,7 @@ export default defineConfig({
 				{
 					text: 'Introduction',
 					items: [
-						{ text: 'What is CodeRAG?', link: '/guide/getting-started' },
+						{ text: 'What is Locus?', link: '/guide/getting-started' },
 						{ text: 'Installation', link: '/guide/installation' },
 						{ text: 'Quick Start', link: '/guide/quick-start' },
 					],
@@ -139,13 +138,13 @@ export default defineConfig({
 		},
 
 		socialLinks: [
-			{ icon: 'github', link: 'https://github.com/SylphxAI/coderag' },
-			{ icon: 'npm', link: 'https://www.npmjs.com/package/@sylphx/coderag' },
+			{ icon: 'github', link: 'https://github.com/SylphxAI/locus' },
+			{ icon: 'npm', link: 'https://www.npmjs.com/package/@sylphx/locus' },
 		],
 
 		footer: {
 			message: 'Released under the MIT License.',
-			copyright: 'Copyright © 2024 Sylphx',
+			copyright: 'Copyright © 2026 Sylphx',
 		},
 
 		search: {
@@ -156,7 +155,7 @@ export default defineConfig({
 		},
 
 		editLink: {
-			pattern: 'https://github.com/SylphxAI/coderag/edit/main/docs/:path',
+			pattern: 'https://github.com/SylphxAI/locus/edit/main/docs/:path',
 			text: 'Edit this page on GitHub',
 		},
 
