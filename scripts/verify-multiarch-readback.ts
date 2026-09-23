@@ -17,7 +17,7 @@ const mcpPkg = JSON.parse(
 
 const version = mcpPkg.version
 const optional = mcpPkg.optionalDependencies ?? {}
-const platformNames = Object.keys(optional).filter((n) => n.startsWith('@sylphx/coderag-mcp-'))
+const platformNames = Object.keys(optional).filter((n) => n.startsWith('@sylphx/locus-'))
 
 if (platformNames.length === 0) {
 	console.error('[verify-multiarch-readback] No platform optionalDependencies declared')
@@ -82,7 +82,7 @@ function packageExistsWithRetry(name: string, ver: string, attempts = 10): boole
 // Version-PR-only Release runs still invoke postpublish after creating the
 // Changesets version PR (published=false). Skip fail-closed readback until
 // the version actually exists on the registry.
-if (!packageExists('@sylphx/locus', version) || packageExists('@sylphx/coderag-mcp', version)) {
+if (!packageExists('@sylphx/locus', version)) {
 	console.log(
 		`[verify-multiarch-readback] SKIP: @sylphx/locus@${version} not on registry yet (version PR path; publish happens after version PR merge)`
 	)
