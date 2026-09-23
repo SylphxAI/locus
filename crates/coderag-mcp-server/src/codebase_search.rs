@@ -5,18 +5,20 @@ use crate::cli_bridge;
 
 pub const CODEBASE_SEARCH_ROUTE: &str = "rust-tfidf";
 
-pub fn codebase_search(args: Value) -> Result<CallToolResult, rmcp::ErrorData> {
-    let root = args
-        .get("root")
-        .and_then(Value::as_str)
-        .map(str::to_string)
+/// Launch `--root`, then `CODERAG_ROOT`, then the tool argument.
+fn resolve_search_root(args: &Value) -> Option<String> {
+    crate::launch_args::launch_root()
         .or_else(|| std::env::var("CODERAG_ROOT").ok())
-        .ok_or_else(|| {
-            rmcp::ErrorData::invalid_params(
-                "root is required (pass in tool args or set CODERAG_ROOT)",
-                None,
-            )
-        })?;
+        .or_else(|| args.get("root").and_then(Value::as_str).map(str::to_string))
+}
+
+pub fn codebase_search(args: Value) -> Result<CallToolResult, rmcp::ErrorData> {
+    let root = resolve_search_root(&args).ok_or_else(|| {
+        rmcp::ErrorData::invalid_params(
+            "root is required (pass in tool args or set CODERAG_ROOT)",
+            None,
+        )
+    })?;
 
     let query = args
         .get("query")
@@ -25,10 +27,7 @@ pub fn codebase_search(args: Value) -> Result<CallToolResult, rmcp::ErrorData> {
 
     let limit = args.get("limit").and_then(Value::as_u64).unwrap_or(10);
 
-    let _ = cli_bridge::invoke_cli_tool(
-        "coderag_index",
-        json!({ "root": root, "mode": "auto" }),
-    )?;
+    let _ = cli_bridge::invoke_cli_tool("coderag_index", json!({ "root": root, "mode": "auto" }))?;
 
     let mut search = cli_bridge::invoke_cli_tool(
         "coderag_search",
@@ -44,11 +43,7 @@ pub fn codebase_search(args: Value) -> Result<CallToolResult, rmcp::ErrorData> {
     Ok(search)
 }
 pub fn find_related(args: Value) -> Result<CallToolResult, rmcp::ErrorData> {
-    let root = args
-        .get("root")
-        .and_then(Value::as_str)
-        .map(str::to_string)
-        .or_else(|| std::env::var("CODERAG_ROOT").ok())
+    let root = resolve_search_root(&args)
         .ok_or_else(|| rmcp::ErrorData::invalid_params("root is required", None))?;
     let path = args
         .get("path")
@@ -70,4 +65,23 @@ pub fn find_related(args: Value) -> Result<CallToolResult, rmcp::ErrorData> {
         structured["engine"] = json!(coderag_core::ENGINE_NAME);
     }
     Ok(result)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::resolve_search_root;
+    use serde_json::json;
+
+    #[test]
+    fn configured_launch_root_is_used_without_mutating_process_environment() {
+        let before = std::env::var("CODERAG_ROOT");
+        crate::launch_args::set_launch_root("/tmp/locus-launch-root".to_string())
+            .expect("launch root can be set once");
+        let root = resolve_search_root(&json!({
+            "root": "/tmp/tool-argument-root",
+        }))
+        .expect("configured root");
+        assert_eq!(root, "/tmp/locus-launch-root");
+        assert_eq!(std::env::var("CODERAG_ROOT").ok(), before.ok());
+    }
 }

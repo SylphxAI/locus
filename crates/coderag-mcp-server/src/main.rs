@@ -1,9 +1,15 @@
+use coderag_mcp_server::launch_args::{parse_launch_args, set_launch_root};
 use coderag_mcp_server::{cli_bridge, http_transport, CoderagMcp, SERVER_VERSION};
 use rmcp::ServiceExt;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    if std::env::args().nth(1).as_deref() == Some("doctor") {
+    let launch = parse_launch_args(std::env::args().skip(1)).map_err(anyhow::Error::msg)?;
+    if let Some(root) = launch.root {
+        set_launch_root(root).map_err(anyhow::Error::msg)?;
+    }
+
+    if launch.doctor {
         eprintln!(
             "Locus Rust MCP server {SERVER_VERSION} ({})",
             coderag_core::ENGINE_NAME

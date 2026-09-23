@@ -1,10 +1,10 @@
 # Locus
 
-> Lightning-fast semantic code search with AST chunking - RAG-ready for AI assistants
+> Local code search with AST chunking for AI assistants. Default retrieval is TF-IDF plus optional vector embeddings.
 
 ## Overview
 
-Locus is a high-performance code search library that combines TF-IDF keyword search with optional vector embeddings. It uses AST parsing to split code at semantic boundaries (functions, classes, etc.) for precise, chunk-level search results.
+Locus is a code search library that combines TF-IDF keyword search with optional vector embeddings. It uses AST parsing to split code at semantic boundaries (functions, classes, etc.) for precise, chunk-level search results.
 
 ## Documentation
 
@@ -44,11 +44,11 @@ Locus is a high-performance code search library that combines TF-IDF keyword sea
 ### Chunk-Level Search
 Unlike file-level search, Locus returns semantic chunks (functions, classes, methods) with precise line numbers. This reduces token usage when feeding results to LLMs.
 
-### Hybrid Search
-Combines keyword search (BM25) with optional vector embeddings for best accuracy. Use vectorWeight parameter to balance precision vs semantic understanding.
+### Hybrid search (optional)
+Default retrieval is TF-IDF. Optional vector embeddings can be combined with that keyword search when you configure them.
 
 ### Persistent Storage
-SQLite-based storage with instant startup (<100ms). Automatically handles incremental updates when files change.
+SQLite-based storage with incremental updates when files change.
 
 ### MCP Server
 Model Context Protocol server for AI assistants (Claude, Cursor, VS Code). Provides codebase_search tool for semantic code search.

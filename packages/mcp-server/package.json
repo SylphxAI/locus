@@ -1,7 +1,7 @@
 {
 	"name": "@sylphx/locus",
 	"version": "0.6.1",
-	"description": "Locus — the exact code chunk for the job. Fast local hybrid code search for agents.",
+	"description": "Locus — the exact code chunk for the job. Local Rust TF-IDF code search for agents.",
 	"homepage": "https://sylphxai.github.io/locus/",
 	"type": "module",
 	"main": "./dist/rust-engine.js",

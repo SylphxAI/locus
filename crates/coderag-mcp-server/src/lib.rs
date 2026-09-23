@@ -1,6 +1,7 @@
 pub mod cli_bridge;
 pub mod codebase_search;
 pub mod http_transport;
+pub mod launch_args;
 pub mod tool_routes;
 
 use rmcp::{
@@ -97,7 +98,7 @@ impl ServerHandler for CoderagMcp {
             .with_server_info(
                 Implementation::new(SERVER_NAME, SERVER_VERSION)
                     .with_description(
-                        "Locus — local-first hybrid code search MCP (Rust rmcp transport)",
+                        "Locus — local-first Rust TF-IDF code search MCP (Rust rmcp transport)",
                     )
                     .with_website_url("https://github.com/SylphxAI/locus"),
             )
