@@ -1,5 +1,9 @@
 # @sylphx/coderag
 
+> **Not the Locus server.** This package is the old TypeScript library. `npx @sylphx/locus` does not run it. The live server is local Rust TF-IDF in `@sylphx/locus`. Docs: <https://sylphxai.github.io/locus/>.
+>
+> The rest of this file describes that old library. It is not the current product guide.
+
 Core library for semantic code search using vector embeddings with TF-IDF fallback.
 
 ## Installation

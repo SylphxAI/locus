@@ -1,33 +1,33 @@
 {
 	"$schema": "https://context7.com/schema.json",
-	"name": "CodeRAG",
-	"description": "Lightning-fast semantic code search with AST chunking - RAG-ready for AI assistants",
-	"repository": "https://github.com/SylphxAI/coderag",
-	"documentation": "https://coderag.sylphx.com",
-	"npm": "@sylphx/coderag",
+	"name": "Locus",
+	"description": "Local Rust TF-IDF search for agents. Ranked chunks, on the machine, with no API key.",
+	"repository": "https://github.com/SylphxAI/locus",
+	"documentation": "https://sylphxai.github.io/locus/",
+	"npm": "@sylphx/locus",
 	"rules": [
-		"Always use PersistentStorage for production - it provides SQLite persistence and instant startup",
-		"Use async parseAsync() not sync parse() - WASM parsers require async initialization",
-		"Import from subpaths when possible: '@sylphx/coderag/storage', '@sylphx/coderag/tfidf'",
-		"Set lowMemoryMode: true for codebases over 10,000 files to use SQL-based search",
-		"Use hybridSearch() for best results when OPENAI_API_KEY is set, otherwise use indexer.search()",
-		"File watching requires await indexer.index({ watch: true }) - don't forget await",
-		"SearchResult.snippet contains formatted code with line numbers, chunkType indicates the AST node type",
-		"StarCoder2 tokenizer downloads on first use (~4.7MB) - pre-initialize with initializeTokenizer()",
-		"Synth parsers are optional dependencies - they install automatically when needed"
+		"The live server is @sylphx/locus from SylphxAI/locus. It ranks chunks with local Rust TF-IDF and does not call an embedding API.",
+		"Pass an absolute --root. Locus does not default to the current working directory. Root order is the tool argument, then launch --root, then CODERAG_ROOT.",
+		"Launch arguments are only doctor and --root. HTTP listens only when MCP_TRANSPORT=http or CODERAG_MCP_TRANSPORT=http. The default is stdio.",
+		"codebase_search scores with BM25 (k1 1.2, b 0.75). login does not match authenticate. A query that tokenizes to nothing returns an empty result.",
+		"file_extensions, path_filter, and exclude_paths apply before limit. The default limit is 10 and the maximum is 100. ts and .ts both mean the ts extension. .ts does not match .tsx.",
+		"Symbol chunks are line-start regular expressions, not a syntax tree. Indexed extensions are .ts .tsx .js .jsx .mjs .cjs .rs .md .py .go.",
+		"The index files are .coderag/rust-index.json and .coderag/file-hashes.json. Exact skipped segments are node_modules, dist, target, and .git. Files larger than 1048576 bytes are skipped.",
+		"find_related needs a repository-relative forward-slash path. Its limit defaults to 10. An empty result is an MCP internal error: No related chunks found for that location.",
+		"The top-level route is rust-tfidf or rust-related. include_content defaults to true. Set it false and snippet is null."
 	],
 	"folders": [
 		{
 			"path": "docs",
-			"description": "VitePress documentation site"
+			"description": "VitePress documentation for the Locus MCP server"
 		},
 		{
-			"path": "packages/core/src",
-			"description": "Core library source code"
+			"path": "crates/coderag-core/src",
+			"description": "Rust TF-IDF index and search"
 		},
 		{
-			"path": "packages/mcp-server/src",
-			"description": "MCP server implementation"
+			"path": "crates/coderag-mcp-server/src",
+			"description": "Rust MCP server"
 		}
 	],
 	"excludeFolders": [
@@ -36,20 +36,21 @@
 		".vitepress/dist",
 		".vitepress/cache",
 		".turbo",
-		".git"
+		".git",
+		"target"
 	],
 	"examples": [
 		{
-			"title": "Basic Usage",
-			"code": "import { CodebaseIndexer, PersistentStorage } from '@sylphx/coderag'\n\nconst storage = new PersistentStorage({ codebaseRoot: '.' })\nconst indexer = new CodebaseIndexer({ codebaseRoot: '.', storage })\n\nawait indexer.index()\nconst results = await indexer.search('authentication')"
+			"title": "Start the server",
+			"code": "npx -y @sylphx/locus --root=/absolute/path/to/project"
 		},
 		{
-			"title": "Hybrid Search",
-			"code": "import { CodebaseIndexer, PersistentStorage, createEmbeddingProvider, hybridSearch } from '@sylphx/coderag'\n\nconst embeddingProvider = await createEmbeddingProvider({ provider: 'openai' })\nconst storage = new PersistentStorage({ codebaseRoot: '.' })\nconst indexer = new CodebaseIndexer({ codebaseRoot: '.', storage, embeddingProvider })\n\nawait indexer.index()\nconst results = await hybridSearch('user login flow', indexer, { vectorWeight: 0.7 })"
+			"title": "Add Locus to Codex",
+			"code": "codex mcp add locus -- npx -y @sylphx/locus --root=/absolute/path/to/project"
 		},
 		{
-			"title": "MCP Server",
-			"code": "npx @sylphx/locus --root=/path/to/project"
+			"title": "Search",
+			"code": "{\n  \"query\": \"authenticate request\",\n  \"limit\": 5,\n  \"file_extensions\": [\"ts\"],\n  \"exclude_paths\": [\"src/legacy\"]\n}"
 		}
 	]
 }

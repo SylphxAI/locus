@@ -169,11 +169,20 @@ pub fn inventory_files(root: &Path, max_file_bytes: u64) -> Result<HashMap<Strin
 }
 
 fn is_indexable_extension(rel: &str) -> bool {
-    rel.ends_with(".ts")
-        || rel.ends_with(".tsx")
-        || rel.ends_with(".js")
-        || rel.ends_with(".rs")
-        || rel.ends_with(".md")
+    matches!(
+        final_extension(rel),
+        Some("ts" | "tsx" | "js" | "jsx" | "mjs" | "cjs" | "rs" | "md" | "py" | "go")
+    )
+}
+
+/// Final extension only: `file.tsx` is `tsx`, `file.sh` is `sh`, `file.tar.ts` is `ts`.
+pub fn final_extension(path: &str) -> Option<&str> {
+    let file_name = path.rsplit(['/', '\\']).next().unwrap_or(path);
+    let (stem, ext) = file_name.rsplit_once('.')?;
+    if stem.is_empty() || ext.is_empty() {
+        return None;
+    }
+    Some(ext)
 }
 
 fn rebuild_doc_freq(index: &mut SearchIndex) {
@@ -276,7 +285,7 @@ struct SymbolSpan {
 fn chunk_file(path: &str, content: &str) -> Vec<Chunk> {
     let lines: Vec<&str> = content.lines().collect();
     let total_lines = lines.len().max(1) as u32;
-    let spans = extract_symbol_spans(content);
+    let spans = extract_symbol_spans(path, content);
 
     if spans.is_empty() {
         let path_context = path.replace(['/', '.', '-'], " ");
@@ -330,8 +339,8 @@ fn chunk_file(path: &str, content: &str) -> Vec<Chunk> {
         .collect()
 }
 
-fn extract_symbol_spans(content: &str) -> Vec<SymbolSpan> {
-    let patterns = [
+fn extract_symbol_spans(path: &str, content: &str) -> Vec<SymbolSpan> {
+    let mut patterns = vec![
         (
             Regex::new(r"(?m)^export\s+(?:async\s+)?function\s+([A-Za-z_][A-Za-z0-9_]*)").unwrap(),
             "function",
@@ -357,6 +366,36 @@ fn extract_symbol_spans(content: &str) -> Vec<SymbolSpan> {
             "class",
         ),
     ];
+
+    match final_extension(path) {
+        Some("rs") => {
+            patterns.extend([
+                (
+                    Regex::new(r"(?m)^\s*(?:pub(?:\([^)]*\))?\s+)?(?:async\s+)?fn\s+([A-Za-z_][A-Za-z0-9_]*)").unwrap(),
+                    "function",
+                ),
+                (
+                    Regex::new(r"(?m)^\s*(?:pub(?:\([^)]*\))?\s+)?struct\s+([A-Za-z_][A-Za-z0-9_]*)").unwrap(),
+                    "struct",
+                ),
+                (
+                    Regex::new(r"(?m)^\s*(?:pub(?:\([^)]*\))?\s+)?enum\s+([A-Za-z_][A-Za-z0-9_]*)").unwrap(),
+                    "enum",
+                ),
+                (
+                    Regex::new(r"(?m)^\s*(?:pub(?:\([^)]*\))?\s+)?trait\s+([A-Za-z_][A-Za-z0-9_]*)").unwrap(),
+                    "trait",
+                ),
+            ]);
+        }
+        Some("go") => {
+            patterns.push((
+                Regex::new(r"(?m)^\s*func\s+(?:\([^)\n]*\)\s*)?([A-Za-z_][A-Za-z0-9_]*)").unwrap(),
+                "function",
+            ));
+        }
+        _ => {}
+    }
 
     let mut spans = Vec::new();
     for (pattern, chunk_type) in patterns {
@@ -434,18 +473,51 @@ pub fn find_related_index(
         .collect()
 }
 
+#[derive(Debug, Clone)]
+pub struct SearchOptions {
+    pub limit: usize,
+    pub include_content: bool,
+    pub file_extensions: Vec<String>,
+    pub path_filter: Option<String>,
+    pub exclude_paths: Vec<String>,
+}
+
+impl SearchOptions {
+    pub fn limit_only(limit: usize) -> Self {
+        Self {
+            limit,
+            include_content: true,
+            file_extensions: Vec::new(),
+            path_filter: None,
+            exclude_paths: Vec::new(),
+        }
+    }
+}
+
 pub fn search_index(index: &SearchIndex, query: &str, limit: usize) -> Vec<crate::types::SearchHit> {
+    search_index_with(index, query, &SearchOptions::limit_only(limit))
+}
+
+pub fn search_index_with(
+    index: &SearchIndex,
+    query: &str,
+    options: &SearchOptions,
+) -> Vec<crate::types::SearchHit> {
     let query_terms = tokenize(query);
     if query_terms.is_empty() || index.chunks.is_empty() {
         return vec![];
     }
 
+    // Document frequency stays the full index. Filters only decide which hits return.
     let n_docs = index.chunks.len() as f64;
     let k1 = 1.2;
     let b = 0.75;
 
     let mut scored = Vec::new();
     for chunk in &index.chunks {
+        if !chunk_matches_filters(chunk, options) {
+            continue;
+        }
         let mut score = 0.0;
         let mut matched = Vec::new();
         let doc_len = chunk.tokens.len() as f64;
@@ -484,7 +556,11 @@ pub fn search_index(index: &SearchIndex, query: &str, limit: usize) -> Vec<crate
                 score_components,
                 start_line: Some(chunk.start_line),
                 end_line: Some(chunk.end_line),
-                snippet: Some(chunk.text.clone()),
+                snippet: if options.include_content {
+                    Some(chunk.text.clone())
+                } else {
+                    None
+                },
                 symbol_name: chunk.symbol_name.clone(),
                 chunk_type: Some(chunk.chunk_type.clone()),
             });
@@ -492,10 +568,297 @@ pub fn search_index(index: &SearchIndex, query: &str, limit: usize) -> Vec<crate
     }
 
     scored.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal));
-    scored.truncate(limit);
+    scored.truncate(options.limit);
     scored
+}
+
+fn chunk_matches_filters(chunk: &Chunk, options: &SearchOptions) -> bool {
+    let path = crate::search_input::normalize_slashes(&chunk.path);
+    if let Some(filter) = &options.path_filter {
+        let filter = crate::search_input::normalize_slashes(filter);
+        if !path.contains(&filter) {
+            return false;
+        }
+    }
+    if options.exclude_paths.iter().any(|excluded| {
+        let excluded = crate::search_input::normalize_slashes(excluded);
+        path.contains(&excluded)
+    }) {
+        return false;
+    }
+    if options.file_extensions.is_empty() {
+        return true;
+    }
+    let Some(ext) = final_extension(&path) else {
+        return false;
+    };
+    options.file_extensions.iter().any(|wanted| {
+        crate::search_input::extension_token(wanted).as_deref() == Some(ext)
+    })
 }
 
 pub fn index_path(root: &Path) -> PathBuf {
     root.join(".coderag").join("rust-index.json")
+}
+
+#[cfg(test)]
+mod search_filter_tests {
+    use super::*;
+    use std::fs;
+
+    fn write(dir: &std::path::Path, rel: &str, body: &str) {
+        let path = dir.join(rel);
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent).unwrap();
+        }
+        fs::write(path, body).unwrap();
+    }
+
+    fn temp_repo(name: &str) -> std::path::PathBuf {
+        let dir = std::env::temp_dir().join(format!(
+            "locus-{name}-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    fn options(limit: usize) -> SearchOptions {
+        SearchOptions::limit_only(limit)
+    }
+
+    #[test]
+    fn refresh_mode_string_parses_as_auto() {
+        assert_eq!(IndexMode::parse("refresh"), IndexMode::Auto);
+        assert_eq!(IndexMode::parse("full"), IndexMode::Full);
+        assert_eq!(IndexMode::parse("auto"), IndexMode::Auto);
+    }
+
+    #[test]
+    fn final_extension_is_exact_and_case_sensitive() {
+        assert_eq!(final_extension("src/a.ts"), Some("ts"));
+        assert_eq!(final_extension("src/a.tsx"), Some("tsx"));
+        assert_eq!(final_extension("src/a.js"), Some("js"));
+        assert_eq!(final_extension("src/a.jsx"), Some("jsx"));
+        assert_eq!(final_extension("src/a.h"), Some("h"));
+        assert_eq!(final_extension("src/a.sh"), Some("sh"));
+        assert_eq!(final_extension(r"src\a.sh"), Some("sh"));
+        assert_eq!(final_extension("src/a.TS"), Some("TS"));
+        assert_ne!(final_extension("src/a.sh"), Some("h"));
+        assert_ne!(final_extension("src/a.tsx"), Some("ts"));
+    }
+
+    #[test]
+    fn filters_run_before_limit_and_keep_full_index_document_frequency() {
+        let dir = temp_repo("filters");
+        write(&dir, "ext/a.ts", "export function extmarker() { return 1 }\n");
+        write(&dir, "ext/a.tsx", "export function extmarker() { return 1 }\n");
+        write(&dir, "ext/a.js", "export function extmarker() { return 1 }\n");
+        write(&dir, "ext/a.jsx", "export function extmarker() { return 1 }\n");
+        write(&dir, "ext/a.h", "int extmarker;\n");
+        write(&dir, "ext/a.sh", "extmarker\n");
+        write(&dir, "Src/Auth.ts", "export function markerpath() { return 1 }\n");
+        write(
+            &dir,
+            "rank/first.ts",
+            "export function zebra() { zebra zebra zebra zebra }\n",
+        );
+        write(&dir, "rank/second.ts", "export function zebra() { zebra }\n");
+        write(&dir, "rank/third.ts", "export function zebra() { zebra }\n");
+        write(&dir, "df/a.ts", "export function alpha() { sharedterm }\n");
+        write(&dir, "df/b.ts", "export function beta() { sharedterm }\n");
+        write(&dir, "df/c.ts", "export function gamma() { otherterm }\n");
+        write(&dir, "paint.ts", "fn paint() { return 1 }\nexport function render() { return 2 }\n");
+        write(&dir, "only-paint.ts", "fn paint() { return 1 }\n");
+        write(
+            &dir,
+            "lib.rs",
+            "// preambletoken\npub(crate) fn paint() {}\npub struct Color {}\npub enum Mode {}\npub trait Brush {}\n",
+        );
+        write(
+            &dir,
+            "main.go",
+            "// gopreamble\nfunc main() {}\nfunc (s *Server) Listen() {}\n",
+        );
+
+        let (index, _) = build_index(&dir, 1_048_576).unwrap();
+        let paths: Vec<_> = index.chunks.iter().map(|chunk| chunk.path.as_str()).collect();
+        assert!(paths.iter().all(|path| !path.ends_with(".h") && !path.ends_with(".sh")));
+
+        let ext_hits = |ext: &str| {
+            search_index_with(
+                &index,
+                "extmarker",
+                &SearchOptions {
+                    file_extensions: vec![ext.into()],
+                    ..options(10)
+                },
+            )
+        };
+        let only = |ext: &str, suffix: &str| {
+            let hits = ext_hits(ext);
+            assert_eq!(hits.len(), 1, "{ext}");
+            assert!(hits[0].path.ends_with(suffix), "{} -> {}", ext, hits[0].path);
+        };
+        only("ts", "ext/a.ts");
+        only(".ts", "ext/a.ts");
+        only("tsx", "ext/a.tsx");
+        only("js", "ext/a.js");
+        only("jsx", "ext/a.jsx");
+        assert!(ext_hits("TS").is_empty());
+        assert!(ext_hits("h").is_empty());
+        assert!(ext_hits("sh").is_empty());
+
+        let auth = |filter: &str| {
+            search_index_with(
+                &index,
+                "markerpath",
+                &SearchOptions {
+                    path_filter: Some(filter.into()),
+                    ..options(10)
+                },
+            )
+        };
+        assert!(auth("auth").is_empty());
+        assert_eq!(auth("Auth").len(), 1);
+        assert_eq!(auth(r"Src\Auth").len(), 1);
+        let excluded = search_index_with(
+            &index,
+            "markerpath",
+            &SearchOptions {
+                exclude_paths: vec!["Auth".into()],
+                ..options(10)
+            },
+        );
+        assert!(excluded.is_empty());
+
+        let located = search_index_with(&index, "markerpath", &options(10));
+        assert_eq!(located.len(), 1);
+        assert!(located[0].snippet.as_ref().unwrap().contains("markerpath"));
+        let hidden = search_index_with(
+            &index,
+            "markerpath",
+            &SearchOptions {
+                include_content: false,
+                ..options(10)
+            },
+        );
+        assert_eq!(hidden.len(), 1);
+        assert!(hidden[0].snippet.is_none());
+
+        let top = search_index_with(&index, "zebra", &options(1));
+        assert_eq!(top.len(), 1);
+        assert!(top[0].path.ends_with("rank/first.ts"), "{}", top[0].path);
+        let next = search_index_with(
+            &index,
+            "zebra",
+            &SearchOptions {
+                limit: 1,
+                exclude_paths: vec!["rank/first.ts".into()],
+                ..options(1)
+            },
+        );
+        assert_eq!(next.len(), 1);
+        assert!(!next[0].path.contains("rank/first.ts"), "{}", next[0].path);
+
+        let df_hits = search_index_with(
+            &index,
+            "sharedterm",
+            &SearchOptions {
+                path_filter: Some("df/a.ts".into()),
+                ..options(10)
+            },
+        );
+        assert_eq!(df_hits.len(), 1);
+        let df = df_hits[0]
+            .score_components
+            .iter()
+            .find(|part| part.term == "sharedterm")
+            .unwrap();
+        assert_eq!(df.document_frequency, 2.0);
+
+        let paint_ts: Vec<_> = index
+            .chunks
+            .iter()
+            .filter(|chunk| chunk.path == "paint.ts" || chunk.path == "only-paint.ts")
+            .collect();
+        assert!(paint_ts.iter().all(|chunk| chunk.symbol_name.as_deref() != Some("paint")));
+        assert!(paint_ts.iter().any(|chunk| chunk.symbol_name.as_deref() == Some("render")));
+
+        let rust_names: Vec<_> = index
+            .chunks
+            .iter()
+            .filter(|chunk| chunk.path == "lib.rs")
+            .filter_map(|chunk| chunk.symbol_name.clone())
+            .collect();
+        for name in ["paint", "Color", "Mode", "Brush"] {
+            assert!(rust_names.iter().any(|found| found == name), "{rust_names:?}");
+        }
+        assert!(index
+            .chunks
+            .iter()
+            .filter(|chunk| chunk.path == "lib.rs")
+            .all(|chunk| chunk.text.contains("preambletoken")));
+
+        let go_names: Vec<_> = index
+            .chunks
+            .iter()
+            .filter(|chunk| chunk.path == "main.go")
+            .filter_map(|chunk| chunk.symbol_name.clone())
+            .collect();
+        assert!(go_names.iter().any(|name| name == "main"), "{go_names:?}");
+        assert!(go_names.iter().any(|name| name == "Listen"), "{go_names:?}");
+        assert!(index
+            .chunks
+            .iter()
+            .filter(|chunk| chunk.path == "main.go")
+            .all(|chunk| chunk.text.contains("gopreamble")));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn extension_filter_does_not_treat_sh_as_h() {
+        let chunks = vec![
+            Chunk {
+                path: "include/widget.h".into(),
+                start_line: 1,
+                end_line: 1,
+                text: "headerterm".into(),
+                tokens: tokenize("headerterm"),
+                symbol_name: None,
+                chunk_type: "file".into(),
+            },
+            Chunk {
+                path: "scripts/widget.sh".into(),
+                start_line: 1,
+                end_line: 1,
+                text: "headerterm".into(),
+                tokens: tokenize("headerterm"),
+                symbol_name: None,
+                chunk_type: "file".into(),
+            },
+        ];
+        let index = SearchIndex {
+            root: "/tmp".into(),
+            chunks,
+            ..SearchIndex::default()
+        };
+        let hits = search_index_with(
+            &index,
+            "headerterm",
+            &SearchOptions {
+                file_extensions: vec!["h".into()],
+                ..options(10)
+            },
+        );
+        assert_eq!(hits.len(), 1);
+        assert!(hits[0].path.ends_with(".h"));
+        assert!(!hits[0].path.ends_with(".sh"));
+    }
 }

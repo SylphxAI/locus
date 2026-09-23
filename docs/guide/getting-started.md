@@ -1,109 +1,34 @@
 # What is Locus?
 
-Locus is a lightning-fast semantic code search library designed for RAG (Retrieval-Augmented Generation) applications. It combines traditional keyword search (TF-IDF/BM25) with optional vector embeddings to provide accurate, context-aware code search results.
+Locus is a local search server for coding agents. You give it a repository root. It indexes the source on that machine and returns ranked chunks.
 
-## Key Features
+It is a small MCP server, not a retrieval framework. The public tools are `codebase_search` and `find_related`.
 
-### AST-Based Chunking
+## When it helps
 
-Unlike traditional search that returns entire files, Locus uses Abstract Syntax Tree (AST) parsing to split code at semantic boundaries:
+Use it when the agent knows words that actually appear in the code, or when it already has a file and a line and wants nearby chunks.
 
-- **Functions**: Find specific function implementations
-- **Classes**: Locate class definitions and methods
-- **Imports**: Track module dependencies
-- **Comments**: Search documentation blocks
+A hit looks like this:
 
-This means search results are more precise and consume fewer tokens when used with LLMs.
+| Field | Meaning |
+| --- | --- |
+| `path` | Repo-relative path, forward slashes |
+| `startLine`, `endLine` | Chunk span |
+| `symbolName` | Name from a line-start pattern, when one matched |
+| `score` | BM25 for search, token overlap for related chunks |
+| `snippet` | Chunk text, or `null` when `include_content` is false |
 
-### Hybrid Search
+## When it does not
 
-Locus supports three search modes:
+- The query uses different words from the code. `login` does not match `authenticate`.
+- The file extension is outside the indexed set.
+- You wanted a tree of callers, an owner, or a cross-repo answer. That is a different tool.
+- You wanted embeddings. This server does not compute them.
 
-1. **Keyword Search (TF-IDF/BM25)**: Fast, precise matching using StarCoder2 tokenization
-2. **Semantic Search (Vector)**: Meaning-based search using embeddings (requires OpenAI API)
-3. **Hybrid Search**: Weighted combination of both for best results
+## What "chunk" means here
 
-### Performance
+Locus is not a tree-sitter indexer. It splits a file when a line matches a symbol pattern, and otherwise keeps the file as one chunk. Indented methods in TypeScript, JavaScript, and Python stay inside the enclosing chunk. Rust and Go patterns can see indented declarations. The exact patterns are on the [symbol chunks](/guide/ast-chunking) page.
 
-| Metric | Value |
-|--------|-------|
-| Indexing Speed | 1000-2000 files/sec |
-| Startup Time | <100ms (cached) |
-| Search Latency | <50ms |
-| Memory per 1000 files | ~1-2 MB |
+## Next
 
-### Language Support
-
-Locus supports 15+ programming languages out of the box:
-
-- **JavaScript/TypeScript**: JS, JSX, TS, TSX, MJS, CJS
-- **Systems**: Python, Go, Rust, Java, C, C++, Ruby, PHP
-- **Markup**: Markdown, HTML, XML
-- **Data**: JSON, YAML, TOML, Protobuf
-
-## Use Cases
-
-### AI Assistants
-
-Locus powers AI coding assistants by providing relevant code context:
-
-```typescript
-// User asks: "How does authentication work?"
-const results = await indexer.search('authentication logic')
-// Returns: auth.ts:15-45 (login function), middleware/auth.ts:10-30 (JWT validation)
-```
-
-### Code Navigation
-
-Build IDE-like "Go to Definition" features:
-
-```typescript
-const results = await indexer.search('function getUserById', {
-  limit: 1,
-  fileExtensions: ['.ts'],
-})
-```
-
-### Documentation Search
-
-Find relevant code examples for documentation:
-
-```typescript
-const results = await indexer.search('database connection pool', {
-  includeContent: true,
-  contextLines: 5,
-})
-```
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────┐
-│              CodebaseIndexer                     │
-├─────────────────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐               │
-│  │  TF-IDF     │  │   Vector    │  (optional)   │
-│  │  (BM25)     │  │  (OpenAI)   │               │
-│  └──────┬──────┘  └──────┬──────┘               │
-│         │                │                       │
-│         └───────┬────────┘                       │
-│                 ▼                                │
-│  ┌─────────────────────────────────┐            │
-│  │       AST Chunking              │            │
-│  │     (tree-sitter + synth)       │            │
-│  └─────────────────────────────────┘            │
-├─────────────────────────────────────────────────┤
-│  ┌─────────────────────────────────┐            │
-│  │     PersistentStorage           │            │
-│  │        (SQLite)                 │            │
-│  └─────────────────────────────────┘            │
-└─────────────────────────────────────────────────┘
-```
-
-## Next Steps
-
-- [Installation](/guide/installation) - Install Locus in your project
-- [Quick Start](/guide/quick-start) - Build your first search index
-- [MCP Server](/mcp/overview) - Use with AI assistants
-- [Stop code-search guessing](/articles/stop-code-search-guessing) - Why chunk-level search beats grep dumps
-- [Benchmark proof](/benchmark) - Reproducible indexing and search latency
+[Install](/guide/installation) it, then use the [quickstart](/guide/quickstart). The contract is the [tool reference](/mcp/tools).

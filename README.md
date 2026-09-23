@@ -2,75 +2,78 @@
 
 ### The exact code chunk for the job
 
-Locus gives coding agents fast, local code search that returns complete,
-implementation-ready chunks instead of grep dumps or whole-file guesses.
+Locus is local code search for coding agents. It indexes the repository on the machine, ranks chunks with BM25, and returns the path, line range, symbol, score, and chunk text.
+
+No API key. No vector database. No Docker. The default transport is stdio.
 
 ```bash
 npx -y @sylphx/locus --root=/absolute/path/to/project
 ```
 
-For Claude Code:
+Locus does not search the process working directory. Pass `--root`, set `CODERAG_ROOT`, or pass `root` on the tool call. A tool `root` wins, then the launch `--root`, then `CODERAG_ROOT`.
+
+Claude Code:
 
 ```bash
 claude mcp add locus -- npx -y @sylphx/locus --root=/absolute/path/to/project
 ```
 
-A `root` on the tool call wins. Otherwise Locus uses the launch `--root`, then `CODERAG_ROOT`.
+Codex:
 
-## The fastest useful workflow
+```bash
+codex mcp add locus -- npx -y @sylphx/locus --root=/absolute/path/to/project
+```
 
-Ask a natural-language question:
+## Tools
+
+| Tool | Use it when | You get |
+| --- | --- | --- |
+| `codebase_search` | You can name words that appear in the code | Ranked chunks. Filters apply before the limit. |
+| `find_related` | You already have a file and a line | Other chunks that share its tokens |
 
 ```json
 {
-  "query": "where is user authentication enforced?",
-  "limit": 5
+  "query": "authenticate request",
+  "limit": 5,
+  "file_extensions": ["ts"],
+  "path_filter": "src/auth",
+  "exclude_paths": ["src/auth/legacy"]
 }
 ```
 
-Locus returns ranked AST chunks with file paths, line ranges, symbol names,
-score explanations, freshness, and explicit gaps.
+`login` does not match `authenticate`. Ranking is lexical. Search for the words the code uses.
 
-## Jobs Locus is built for
+## What is indexed
 
-| Ask your agent | Locus returns |
+`.ts` `.tsx` `.js` `.jsx` `.mjs` `.cjs` `.rs` `.md` `.py` `.go`
+
+Skipped path segments, by exact name: `node_modules`, `dist`, `target`, `.git`. This is not gitignore. Files larger than 1,048,576 bytes are skipped. The index is `.coderag/rust-index.json` and `.coderag/file-hashes.json`.
+
+A line that looks like a symbol starts a chunk. Other files stay one chunk. The patterns are regular expressions, not a syntax tree. [Symbol chunks](https://sylphxai.github.io/locus/guide/ast-chunking).
+
+## Defaults that stay boring
+
+- `limit` defaults to 10 and must be an integer from 1 to 100.
+- `include_content` defaults to true. `false` returns locators only.
+- There is no `auto`, `fast`, or `quality` search mode.
+- Each call refreshes the local index. Unchanged files are a cache hit. That refresh mode is not a search profile you select.
+- HTTP exists only when `MCP_TRANSPORT=http`. Agents should use stdio.
+
+## Install surfaces
+
+| Surface | Where |
 | --- | --- |
-| “Where is this behavior implemented?” | `codebase_search` |
-| “What code is related to this function?” | `find_related` |
-| “Search across these repositories.” | cross-repo search |
-| “Find the implementation, not tests or declarations.” | ranked code chunks |
-| “Give me enough context to edit safely.” | compact, deduplicated results |
+| Claude Code | `claude mcp add locus -- npx -y @sylphx/locus --root=/absolute/path/to/project` |
+| Codex | `codex mcp add locus -- npx -y @sylphx/locus --root=/absolute/path/to/project` |
+| Cursor | `mcpServers` in `.cursor/mcp.json` or `~/.cursor/mcp.json` |
+| VS Code | `servers` in `.vscode/mcp.json` (`${workspaceFolder}` is expanded) |
+| Other MCP clients | `mcpServers` in `.mcp.json`, with an absolute `--root` |
 
-## Tool surface
+Published natives: `@sylphx/locus-darwin-arm64`, `@sylphx/locus-darwin-x64`, `@sylphx/locus-linux-arm64-gnu`, `@sylphx/locus-linux-x64-gnu`. Windows is not a published target.
 
-| Tool | Purpose |
-| --- | --- |
-| `codebase_search` | Local Rust TF-IDF search over code chunks |
-| `find_related` | Find related chunks from a known file and line |
+`npx -y @sylphx/locus doctor` prints the server version and whether `locus-cli` was found.
 
-The public surface stays small. Indexing is cached locally and refreshed when
-the repository changes. Optional embeddings are opt-in and never required for
-the default path.
-
-## Predictable defaults
-
-Locus does not hide expensive work behind “auto”.
-
-- `fast` is the default local TF-IDF and AST path.
-- `quality` enables optional vectors and reranking when configured.
-- `research` is not a Locus mode; use a separate web tool for external sources.
-- No Docker, vector database, or API key is required.
-- Generated files, dependencies, and build output are excluded by default.
-
-## Why agents use it
-
-- AST boundaries return functions, classes, and methods.
-- Rust TF-IDF ranks the default results. Optional embeddings can add semantic evidence when configured.
-- Results include score components instead of opaque ordering.
-- Token budgets and dedup keep context small.
-- Local indexes keep code on the machine.
-
-## Companion MCP tools
+## Companions
 
 | Product | Job |
 | --- | --- |
@@ -80,18 +83,17 @@ Locus does not hide expensive work behind “auto”.
 | [Spine](https://github.com/SylphxAI/spine) | Repository architecture and impact |
 | [Lookout](https://github.com/SylphxAI/lookout) | Web research with source excerpts |
 
-Locus finds the code chunk; Spine maps the repository architecture. Each product
-is independent, so install only the tools your agent needs.
+Locus finds the chunk. Spine maps the architecture. Install only what the task needs.
+
+Docs: <https://sylphxai.github.io/locus/>
 
 ## Development
 
 ```bash
 bun install
-bun run build
-bun test
+bun run build:rust
 cargo test
-bun run benchmark:public-proof
-bun run benchmark:release-gate
+bun run docs:build
 ```
 
 ## License

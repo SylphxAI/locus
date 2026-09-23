@@ -1,3 +1,7 @@
+::: warning Legacy library
+This page describes the old TypeScript `@sylphx/coderag` library. It is not the Locus MCP server. The live server is local Rust TF-IDF in `@sylphx/locus`. Start at the [quickstart](/guide/quickstart).
+:::
+
 # Vector Search
 
 Locus supports semantic search through vector embeddings. Unlike keyword search (BM25), vector search understands meaning and context.

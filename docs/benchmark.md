@@ -5,6 +5,10 @@ title: Benchmark Proof
 description: Reproducible public benchmark for Locus — indexing throughput and search latency on a fixed in-repo corpus.
 ---
 
+::: warning Not MCP proof
+This page measures the old TypeScript indexer (`MemoryStorage`, profile `coderag-public-proof`) on a fixed fixture. It is not a measurement of the Rust MCP server in `@sylphx/locus`.
+:::
+
 # Benchmark Proof
 
 Locus public performance claims are backed by a single checked-in script and a

@@ -1,11 +1,11 @@
-# Positioning — Locus
+# Positioning
 
-**One-liner:** The exact code chunk for the job.
+**One line:** The exact code chunk for the job.
 
-- **User:** a coding agent that must find the implementation site of a behavior and the code related to it.
-- **Job:** return AST-bounded code chunks with path, line range, symbol, score explanation and freshness.
-- **Promise:** the default path is local, needs no API key, no Docker and no vector database, and returns deduplicated, token-budgeted results.
-- **Identity:** MCP package `@sylphx/locus`, bin `locus`, core library `@sylphx/coderag`, site <https://sylphxai.github.io/locus/>.
-- **Companion tools:** Citra, Iris, Cue, Spine, Locus and Lookout are independent products composed through public MCP and SDK contracts. Locus finds the code chunk; Spine maps the repository architecture.
+- **User:** a coding agent that needs the implementation site of a behavior, or code related to a file and line.
+- **Job:** ranked local chunks with path, line range, symbol, BM25 components, and chunk text.
+- **Promise:** on the machine, no API key, no vector database. The root is explicit. The score uses the words in the query, not synonyms.
+- **Identity:** `@sylphx/locus`, bin `locus`, site <https://sylphxai.github.io/locus/>. `@sylphx/coderag` is the old library, not this server.
+- **Companions:** Citra, Iris, Cue, Spine, and Lookout are separate products. Locus finds the chunk. Spine maps the architecture.
 
-See [vision.md](./vision.md) and [capabilities.md](./capabilities.md) for the destination and the owned capabilities. [TOOL_SURFACE.md](./TOOL_SURFACE.md) is the tool policy and [EVIDENCE_CONTRACT.md](./EVIDENCE_CONTRACT.md) is the result contract.
+See [vision](./vision.md), [capabilities](./capabilities.md), [tool surface](./TOOL_SURFACE.md), and [evidence](./EVIDENCE_CONTRACT.md).

@@ -1,71 +1,33 @@
-# Stop Your Agent From Guessing Which Code Snippet Matters
+# Stop your agent from guessing which chunk matters
 
-You asked Claude to fix the login bug. It edited `src/utils/helpers.ts` — a file
-that has nothing to do with authentication.
+An agent asked to fix login often edits a file that only looks related. The model is not the whole failure. It was handed the wrong window of code.
 
-That is not a model failure. It is a **code search workflow failure**.
+## What the agent was given
 
-## What actually went wrong
+ripgrep returns lines. A whole-file dump returns hundreds of lines that happen to share a word. The model then picks a plausible span.
 
-Most agent stacks search code one of two ways:
+Locus sits in between, on purpose:
 
-1. **grep/ripgrep** — literal match. Fast, but blind to synonyms and intent.
-2. **Cloud RAG** — semantic, but heavy setup, cold starts, and whole-file chunks.
+- It indexes ten source extensions on the local disk.
+- Where a line looks like a symbol, that symbol becomes the chunk. Otherwise the file is one chunk.
+- It ranks those chunks with BM25 and returns the path, the line range, and the text.
 
-Both often return **too much text in the wrong shape**. The model picks a
-plausible-looking snippet and runs with it.
+It does not understand synonyms. A query for `login` misses `authenticateUser` unless those letters appear. It does not watch the filesystem, embed the repository, or search a second repo. If you need a synonym, search the token the code actually uses, or start from `find_related` once you have one good hit.
 
-## Three failures you cannot fix with a better prompt
-
-| Failure | What the agent sees | What actually happened |
-| --- | --- | --- |
-| Literal-only match | "No results" or random hits | Query said "login flow", code says `authenticateUser` |
-| Whole-file dump | 400 lines of context | Only 12 lines in one function matter |
-| Stale index | Old snippet | File changed since last scan; agent patches dead code |
-
-No system prompt fixes the wrong chunk.
-
-## What chunk-level hybrid search changes
-
-Locus indexes at **AST boundaries** — functions, classes, methods — and ranks
-with hybrid TF-IDF (plus optional vectors when you want them):
-
-- **Semantic chunks** the agent can read without burning context.
-- **Scored results** so the best match surfaces first.
-- **Local index** with SQLite persistence and incremental updates.
-- **MCP-first** setup — no Docker, ChromaDB, or cloud pipeline required.
-
-The agent still uses a language model. The difference is it works from **the
-right code block**, not a directory of keyword accidents.
-
-## Try the fix in 30 seconds
+## Try it
 
 ```bash
-claude mcp add coderag -- npx @sylphx/locus --root=/absolute/path/to/project
+claude mcp add locus -- npx -y @sylphx/locus --root=/absolute/path/to/project
 ```
 
 ```json
 {
-  "query": "user authentication login",
+  "query": "authenticate request",
   "limit": 5,
-  "exclude_paths": ["node_modules", "dist"]
+  "exclude_paths": ["test"]
 }
 ```
 
-Point at your repo. Search returns ranked function-level chunks — not whole
-files, not cloud latency.
+Then check the path and the lines before letting the agent edit. The [search page](/guide/how-search-works) is the behavior. The [tool reference](/mcp/tools) is the contract.
 
-## Verify the claims
-
-```bash
-bun run benchmark:public-proof
-```
-
-Reproducible indexing throughput and search latency on a fixed in-repo corpus.
-See [benchmark proof](/benchmark) for methodology.
-
-## Share this
-
-- [Locus on GitHub](https://github.com/SylphxAI/locus)
-- [MCP server docs](/mcp/overview)
-- [⭐ Star the repo](https://github.com/SylphxAI/locus) — help other builders stop guessing
+The checked-in TypeScript benchmark is not a measurement of this server. Do not cite it as one.

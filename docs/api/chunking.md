@@ -1,3 +1,7 @@
+::: warning Legacy library
+This page describes the old TypeScript `@sylphx/coderag` library. It is not the Locus MCP server. The live server is local Rust TF-IDF in `@sylphx/locus`. Start at the [quickstart](/guide/quickstart).
+:::
+
 # AST Chunking
 
 Locus uses AST-based chunking to split code at semantic boundaries (functions, classes, etc.) using the Synth parser library.

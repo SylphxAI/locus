@@ -1,3 +1,7 @@
+::: warning Legacy library
+This page describes the old TypeScript `@sylphx/coderag` library. It is not the Locus MCP server. The live server is local Rust TF-IDF in `@sylphx/locus`. Start at the [quickstart](/guide/quickstart).
+:::
+
 # File Watching
 
 Locus provides real-time file watching using @parcel/watcher for automatic index updates when files change.

@@ -1,3 +1,7 @@
+::: warning Legacy library
+This page describes the old TypeScript `@sylphx/coderag` library. It is not the Locus MCP server. The live server is local Rust TF-IDF in `@sylphx/locus`. Start at the [quickstart](/guide/quickstart).
+:::
+
 # Embedding Providers
 
 Locus supports multiple embedding providers for semantic vector search. Providers use the Vercel AI SDK with OpenAI-compatible APIs.

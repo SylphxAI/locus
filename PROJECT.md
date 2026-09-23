@@ -1,40 +1,27 @@
-# SylphxAI CodeRAG
+# Locus
 
-SylphxAI/locus is a TypeScript/Bun monorepo for hybrid code search and an MCP server for AI assistant code retrieval.
+SylphxAI/locus is the local Rust TF-IDF code search MCP server for coding agents.
 
 ## Lifecycle
 
 - State: `active`
 - Layer: `tooling`
 
-## Goals
+## What ships
 
-- Provide the `@sylphx/coderag` core package for hybrid TF-IDF, vector, AST chunking, indexing, and persistent search.
-- Provide the `@sylphx/coderag-mcp` package as an MCP server surface for AI assistants and IDEs.
-- Maintain docs, examples, tests, and package release workflows for the CodeRAG ecosystem.
+- `@sylphx/locus` (`npx -y @sylphx/locus`) is the server. The bin name is `locus`.
+- Retrieval and the MCP server are the Rust crates under `crates/`.
+- `packages/core` (`@sylphx/coderag`) is the old TypeScript library. It is not the live server, and changes to it are not published from this branch.
+- Docs: <https://sylphxai.github.io/locus/>
 
-## Non-Goals
+## Behavior the docs must keep true
 
-- This repository does not own IDE products, AI assistant runtime policy, or downstream coding-agent behavior.
-- This repository does not own embedding provider accounts, external vector services, or customer-specific codebase indexes.
-- This repository does not own enterprise engineering doctrine.
+- Public tools are `codebase_search` and `find_related`.
+- Ranking is BM25 (`k1 = 1.2`, `b = 0.75`) over ASCII tokens longer than one character. Not embeddings, not hybrid search, and not synonym search.
+- There is no user-facing `auto`, `fast`, or `quality` search mode.
+- Root is explicit: tool `root`, then launch `--root`, then `CODERAG_ROOT`. There is no current-directory default.
+- `file_extensions`, `path_filter`, and `exclude_paths` run before `limit`.
 
-## Boundary
+## Non-goals
 
-This repository owns the CodeRAG core library, MCP server, indexing/search algorithms, persistence layer, docs, examples, tests, and release workflow. Consumers own their MCP configuration, indexed codebase policy, embedding credentials, model/provider selection, and assistant UX.
-
-## Public Surfaces
-
-- Repository README: [`README.md`](./README.md)
-- Root package manifest and scripts: [`package.json`](./package.json)
-- Core package: [`packages/core/`](./packages/core/)
-- MCP server package: [`packages/mcp-server/`](./packages/mcp-server/)
-- Documentation site: [`docs/`](./docs/)
-- MCP docs: [`docs/mcp/`](./docs/mcp/)
-- SOTA family roadmap: [`docs/roadmap/sota-family-roadmap.md`](./docs/roadmap/sota-family-roadmap.md)
-- Examples: [`examples/`](./examples/)
-- CI and release workflows: [`.github/workflows/`](./.github/workflows/)
-
-## Delivery
-
-The repository has Bun/Turborepo CI for pull requests, merge queue, and main pushes, plus a reusable main-branch release workflow. Production proof is passing typecheck, tests, package build, MCP smoke/config validation when MCP behavior changes, release workflow evidence, and package-registry/docs readback for published versions. This manifest slice is documentation-only and does not change package code, MCP behavior, CI, release, or docs deployment behavior.
+This repository does not own IDE products, web research, architecture graphs, or cloud embedding accounts.

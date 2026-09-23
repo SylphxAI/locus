@@ -1,3 +1,7 @@
+::: warning Legacy library
+This page describes the old TypeScript `@sylphx/coderag` library. It is not the Locus MCP server. The live server is local Rust TF-IDF in `@sylphx/locus`. Start at the [quickstart](/guide/quickstart).
+:::
+
 # Hybrid Search
 
 Hybrid search combines keyword-based search (BM25) with semantic search (vector embeddings) to leverage the strengths of both approaches.

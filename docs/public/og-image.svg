@@ -32,15 +32,15 @@
   <text x="230" y="230" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="700" fill="white">Locus</text>
 
   <!-- Tagline -->
-  <text x="230" y="290" font-family="system-ui, -apple-system, sans-serif" font-size="32" fill="#94a3b8">Lightning-fast semantic code search</text>
+  <text x="230" y="290" font-family="system-ui, -apple-system, sans-serif" font-size="32" fill="#94a3b8">Local Rust TF-IDF search for agents</text>
 
   <!-- Features -->
-  <g transform="translate(100, 380)" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#cbd5e1">
-    <text x="0" y="0">AST Chunking</text>
-    <circle cx="180" cy="-8" r="4" fill="#6366f1"/>
-    <text x="200" y="0">BM25 Search</text>
-    <circle cx="380" cy="-8" r="4" fill="#6366f1"/>
-    <text x="400" y="0">Vector Embeddings</text>
+  <g transform="translate(100, 420)" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="#cbd5e1">
+    <text x="0" y="0">Symbol chunks</text>
+    <circle cx="210" cy="-8" r="4" fill="#6366f1"/>
+    <text x="230" y="0">BM25 Search</text>
+    <circle cx="420" cy="-8" r="4" fill="#6366f1"/>
+    <text x="440" y="0">Path filters</text>
     <circle cx="620" cy="-8" r="4" fill="#6366f1"/>
     <text x="640" y="0">MCP Server</text>
   </g>

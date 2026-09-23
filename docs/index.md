@@ -1,23 +1,26 @@
 ---
 layout: home
+
 hero:
   name: "Locus"
   text: "The exact code chunk for the job"
-  tagline: "Find implementation-ready code with local Rust TF-IDF search and related-code discovery."
+  tagline: "Local Rust TF-IDF search for agents. Ranked chunks, on the machine, with no API key."
   actions:
     - theme: brand
       text: Quickstart
       link: /guide/quickstart
     - theme: alt
       text: Tool reference
-      link: /reference/tools
+      link: /mcp/tools
 features:
-  - title: Local-first
-    details: The default path keeps source material on your machine and requires no API key.
-  - title: Predictable work
-    details: Local AST and lexical search are the default. Vectors and reranking are explicit.
-  - title: Citeable output
-    details: Results carry source locators, routes, warnings, and gaps so agents can verify claims.
+  - title: Two tools
+    details: codebase_search ranks chunks with BM25. find_related starts from a file and line you already trust.
+  - title: Filters before the limit
+    details: Extension, path, and exclusion filters decide which chunks compete. They do not trim an already-cut list.
+  - title: An explicit root
+    details: You name the repository. There is no current-directory default and no auto search mode.
+  - title: Lexical on purpose
+    details: login does not match authenticate. The score is explained term by term. No embeddings on this path.
 ---
 
 ## Install
@@ -26,5 +29,4 @@ features:
 npx -y @sylphx/locus --root=/absolute/path/to/project
 ```
 
-Use `locus` from the CLI or connect the same tools to Claude Code, Codex, Cursor,
-VS Code, and any MCP client.
+The same server speaks MCP over stdio to Claude Code, Codex, Cursor, VS Code, and any other client. Pass an absolute root. Locus will not guess the working directory.

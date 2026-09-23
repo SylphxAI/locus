@@ -1,87 +1,84 @@
 # Locus
 
-> Local code search with AST chunking for AI assistants. Default retrieval is TF-IDF plus optional vector embeddings.
+> Local Rust TF-IDF search for agents. Ranked chunks, on the machine, with no API key.
 
-## Overview
-
-Locus is a code search library that combines TF-IDF keyword search with optional vector embeddings. It uses AST parsing to split code at semantic boundaries (functions, classes, etc.) for precise, chunk-level search results.
+Locus is the `@sylphx/locus` MCP server from [SylphxAI/locus](https://github.com/SylphxAI/locus). You name the repository. It ranks code chunks with BM25. This path does not call an embedding API.
 
 ## Documentation
 
-- Getting Started: /guide/getting-started
-- Installation: /guide/installation
-- Quick Start: /guide/quick-start
-- How Search Works: /guide/how-search-works
-- AST Chunking: /guide/ast-chunking
-- TF-IDF & BM25: /guide/tfidf
-- Vector Search: /guide/vector-search
-- Hybrid Search: /guide/hybrid-search
-- Persistent Storage: /guide/storage
-- File Watching: /guide/file-watching
-- Language Support: /guide/languages
-- Performance: /guide/performance
-
-## API Reference
-
-- Overview: /api/overview
-- CodebaseIndexer: /api/indexer
-- PersistentStorage: /api/storage
-- Search Functions: /api/search
-- Embedding Providers: /api/embeddings
-- AST Chunking: /api/chunking
-- Types: /api/types
+- What is Locus?: https://sylphxai.github.io/locus/guide/getting-started
+- Installation: https://sylphxai.github.io/locus/guide/installation
+- Quickstart: https://sylphxai.github.io/locus/guide/quickstart
+- How Search Works: https://sylphxai.github.io/locus/guide/how-search-works
+- Symbol chunks: https://sylphxai.github.io/locus/guide/ast-chunking
+- TF-IDF and BM25: https://sylphxai.github.io/locus/guide/tfidf
+- Language Support: https://sylphxai.github.io/locus/guide/languages
+- Vision: https://sylphxai.github.io/locus/vision
+- Capabilities: https://sylphxai.github.io/locus/capabilities
 
 ## MCP Server
 
-- Overview: /mcp/overview
-- Installation: /mcp/installation
-- Configuration: /mcp/configuration
-- Tools Reference: /mcp/tools
-- IDE Integration: /mcp/ide-integration
+- Overview: https://sylphxai.github.io/locus/mcp/overview
+- Installation: https://sylphxai.github.io/locus/mcp/installation
+- Configuration: https://sylphxai.github.io/locus/mcp/configuration
+- Tools: https://sylphxai.github.io/locus/mcp/tools
+- IDE Integration: https://sylphxai.github.io/locus/mcp/ide-integration
+- Defaults: https://sylphxai.github.io/locus/reference/defaults
+- Tool arguments: https://sylphxai.github.io/locus/reference/tools
 
-## Key Concepts
+## Behavior
 
-### Chunk-Level Search
-Unlike file-level search, Locus returns semantic chunks (functions, classes, methods) with precise line numbers. This reduces token usage when feeding results to LLMs.
+### Explicit root
 
-### Hybrid search (optional)
-Default retrieval is TF-IDF. Optional vector embeddings can be combined with that keyword search when you configure them.
+Pass an absolute `--root`. Locus does not default to the current working directory. Root order is the tool argument, then launch `--root`, then `CODERAG_ROOT`.
 
-### Persistent Storage
-SQLite-based storage with incremental updates when files change.
+### Lexical ranking
 
-### MCP Server
-Model Context Protocol server for AI assistants (Claude, Cursor, VS Code). Provides codebase_search tool for semantic code search.
+`codebase_search` scores chunks with BM25 (`k1` 1.2, `b` 0.75). Tokens are ASCII letters, digits, and underscore, longer than one character. `login` does not match `authenticate`.
 
-## Packages
+### Filters before the limit
 
-- @sylphx/coderag - Core library (TF-IDF, storage, indexer)
-- @sylphx/locus - Locus code search MCP for AI assistants
+`file_extensions`, `path_filter`, and `exclude_paths` choose which chunks compete. `limit` cuts that list. The default limit is 10, and the maximum is 100.
 
-## Quick Start
+### Symbol chunks
 
-```typescript
-import { CodebaseIndexer, PersistentStorage } from '@sylphx/coderag'
+Chunks come from line-start regular expressions, not a syntax tree. If nothing matches, the file is one chunk.
 
-const storage = new PersistentStorage({ codebaseRoot: '.' })
-const indexer = new CodebaseIndexer({ codebaseRoot: '.', storage })
+### Related code
 
-await indexer.index()
-const results = await indexer.search('authentication middleware')
-```
+`find_related` starts from a repository-relative path and a line you already trust.
 
-## MCP Server Usage
+## Indexed files
+
+Extensions: `.ts` `.tsx` `.js` `.jsx` `.mjs` `.cjs` `.rs` `.md` `.py` `.go`.
+
+Skipped directory segments: `node_modules`, `dist`, `target`, `.git`. Files larger than 1 MiB are skipped.
+
+The index is `.coderag/rust-index.json` and `.coderag/file-hashes.json`.
+
+## Quick start
 
 ```bash
-npx @sylphx/locus --root=/path/to/project
+npx -y @sylphx/locus --root=/absolute/path/to/project
 ```
 
-## Supported Languages
+Codex:
 
-JavaScript, TypeScript, Python, Go, Rust, Java, C, C++, Ruby, PHP, Markdown, HTML, JSON, YAML, TOML, and more.
+```bash
+codex mcp add locus -- npx -y @sylphx/locus --root=/absolute/path/to/project
+```
+
+```json
+{
+  "query": "authenticate request",
+  "limit": 5,
+  "file_extensions": ["ts"],
+  "exclude_paths": ["src/legacy"]
+}
+```
 
 ## Links
 
 - GitHub: https://github.com/SylphxAI/locus
-- npm: https://www.npmjs.com/package/@sylphx/coderag
-- Documentation: https://sylphxai.github.io/locus
+- npm: https://www.npmjs.com/package/@sylphx/locus
+- Documentation: https://sylphxai.github.io/locus/

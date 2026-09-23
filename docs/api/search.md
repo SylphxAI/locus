@@ -1,3 +1,7 @@
+::: warning Legacy library
+This page describes the old TypeScript `@sylphx/coderag` library. It is not the Locus MCP server. The live server is local Rust TF-IDF in `@sylphx/locus`. Start at the [quickstart](/guide/quickstart).
+:::
+
 # Search Functions
 
 Locus provides three search modes: hybrid (combines vector and TF-IDF), semantic (vector only), and keyword (TF-IDF only).

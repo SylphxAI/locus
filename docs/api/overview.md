@@ -1,3 +1,7 @@
+::: warning Legacy library
+This page describes the old TypeScript `@sylphx/coderag` library. It is not the Locus MCP server. The live server is local Rust TF-IDF in `@sylphx/locus`. Start at the [quickstart](/guide/quickstart).
+:::
+
 # API Overview
 
 Locus provides a comprehensive API for semantic code search with vector embeddings. This reference documents all exported types, classes, and functions.

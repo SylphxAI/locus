@@ -60,8 +60,7 @@
 		"coderag",
 		"locus",
 		"local-first",
-		"sylphx",
-		"hybrid-search"
+		"sylphx"
 	],
 	"author": "SylphxAI",
 	"license": "MIT",
