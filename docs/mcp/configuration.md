@@ -7,10 +7,11 @@ Locus has no config file. The launch command, the tool arguments, and a short li
 | Source | Precedence |
 | --- | --- |
 | Tool argument `root` | Highest |
-| `--root` / `--root=PATH` | Middle |
-| `CODERAG_ROOT` | Lowest |
+| `--root` / `--root=PATH` | |
+| `LOCUS_ROOT` | |
+| `CODERAG_ROOT` | Lowest. Used only when `LOCUS_ROOT` is unset |
 
-All three empty is an error: `root is required (pass it on the tool call, launch with --root, or set CODERAG_ROOT)`. The tool argument does not update `CODERAG_ROOT`.
+All four empty is an error: `root is required (pass it on the tool call, launch with --root, or set LOCUS_ROOT)`. The tool argument does not update either environment variable.
 
 Use an absolute path. A relative path is resolved from the server process, not from the editor buffer.
 
@@ -18,7 +19,8 @@ Use an absolute path. A relative path is resolved from the server process, not f
 
 | Variable | Effect |
 | --- | --- |
-| `CODERAG_ROOT` | Repository root when the tool call and `--root` are absent |
+| `LOCUS_ROOT` | Repository root when the tool call and `--root` are absent |
+| `CODERAG_ROOT` | Same role as `LOCUS_ROOT`, only when `LOCUS_ROOT` is unset |
 | `MCP_TRANSPORT` or `CODERAG_MCP_TRANSPORT` | Set to `http` to serve HTTP. Any other value, or unset, is stdio |
 | `MCP_HTTP_HOST` or `CODERAG_MCP_HTTP_HOST` | HTTP bind host. Default `127.0.0.1` |
 | `MCP_HTTP_PORT` or `CODERAG_MCP_HTTP_PORT` | HTTP port. Default `8080` |

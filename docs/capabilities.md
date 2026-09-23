@@ -14,9 +14,9 @@
 
 | Capability | Tool | What comes back |
 | --- | --- | --- |
-| Ranked chunk search | `codebase_search` | Path, lines, symbol, BM25 components, chunk text. Route `rust-tfidf`. |
+| Ranked chunk search | `codebase_search` | Path, lines, symbol, BM25 components, chunk text. Route `rust-tfidf` is the historical id of this BM25 path. |
 | Related chunks | `find_related` | Token overlap from a known repo-relative path and line. Route `rust-related`. |
-| Local index | both tools, before they search | `.coderag/rust-index.json` and `.coderag/file-hashes.json` |
+| Local index | both tools, before they search | `.locus/rust-index.json` and `.locus/file-hashes.json`. `.coderag/` is read only when the `.locus` index is absent. |
 
 ## Not owned
 

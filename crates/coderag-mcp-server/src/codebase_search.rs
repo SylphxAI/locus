@@ -5,15 +5,30 @@ use crate::cli_bridge;
 
 pub const CODEBASE_SEARCH_ROUTE: &str = "rust-tfidf";
 
-/// Tool argument `root`, then launch `--root`, then `CODERAG_ROOT`.
+fn nonempty_var(key: &str) -> Option<String> {
+    std::env::var(key)
+        .ok()
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+}
+
+/// Tool argument `root`, then launch `--root`, then `LOCUS_ROOT`, then `CODERAG_ROOT`.
 fn resolve_search_root(args: &Value) -> Option<String> {
-    explicit_root(args)
-        .or_else(|| crate::launch_args::launch_root())
-        .or_else(|| {
-            std::env::var("CODERAG_ROOT")
-                .ok()
-                .filter(|value| !value.trim().is_empty())
-        })
+    resolve_ranked_root(
+        explicit_root(args),
+        crate::launch_args::launch_root(),
+        nonempty_var("LOCUS_ROOT"),
+        nonempty_var("CODERAG_ROOT"),
+    )
+}
+
+fn resolve_ranked_root(
+    tool_root: Option<String>,
+    launch_root: Option<String>,
+    locus_root: Option<String>,
+    coderag_root: Option<String>,
+) -> Option<String> {
+    tool_root.or(launch_root).or(locus_root).or(coderag_root)
 }
 
 fn explicit_root(args: &Value) -> Option<String> {
@@ -48,7 +63,7 @@ pub fn codebase_search(args: Value) -> Result<CallToolResult, rmcp::ErrorData> {
     })?;
     let root = resolve_search_root(&args).ok_or_else(|| {
         rmcp::ErrorData::invalid_params(
-            "root is required (pass it on the tool call, launch with --root, or set CODERAG_ROOT)",
+            "root is required (pass it on the tool call, launch with --root, or set LOCUS_ROOT)",
             None,
         )
     })?;
@@ -138,6 +153,7 @@ mod tests {
     #[test]
     fn tool_root_wins_over_launch_root_without_mutating_environment() {
         let before = std::env::var("CODERAG_ROOT");
+        let before_locus = std::env::var("LOCUS_ROOT");
         crate::launch_args::set_launch_root("/tmp/locus-launch-root".to_string())
             .expect("launch root can be set once");
         let explicit = resolve_search_root(&json!({
@@ -148,5 +164,39 @@ mod tests {
         let launched = resolve_search_root(&json!({})).expect("launch root");
         assert_eq!(launched, "/tmp/locus-launch-root");
         assert_eq!(std::env::var("CODERAG_ROOT").ok(), before.ok());
+        assert_eq!(std::env::var("LOCUS_ROOT").ok(), before_locus.ok());
+    }
+
+    #[test]
+    fn locus_root_beats_coderag_root_and_loses_to_an_explicit_root() {
+        assert_eq!(
+            super::resolve_ranked_root(None, None, Some("/locus".into()), Some("/coderag".into()))
+                .as_deref(),
+            Some("/locus")
+        );
+        assert_eq!(
+            super::resolve_ranked_root(
+                None,
+                Some("/launch".into()),
+                Some("/locus".into()),
+                Some("/coderag".into()),
+            )
+            .as_deref(),
+            Some("/launch")
+        );
+        assert_eq!(
+            super::resolve_ranked_root(None, None, None, Some("/coderag".into())).as_deref(),
+            Some("/coderag")
+        );
+        assert_eq!(
+            super::resolve_ranked_root(
+                Some("/tool".into()),
+                Some("/launch".into()),
+                Some("/locus".into()),
+                Some("/coderag".into()),
+            )
+            .as_deref(),
+            Some("/tool")
+        );
     }
 }

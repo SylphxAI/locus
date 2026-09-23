@@ -1,6 +1,6 @@
-# TF-IDF and BM25
+# BM25
 
-The tool route is named `rust-tfidf`. The score is BM25.
+The ranker is BM25. The tool route id `rust-tfidf` is the historical name of this path, not a TF-IDF score.
 
 ```text
 idf(term) = ln( (N - df + 0.5) / (df + 0.5) + 1 )

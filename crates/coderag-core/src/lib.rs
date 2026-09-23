@@ -1,4 +1,4 @@
-//! CodeRAG Rust retrieval core (TF-IDF).
+//! Locus retrieval core. The ranker is BM25. The route id `rust-tfidf` is historical.
 
 pub mod engine;
 pub mod index;
@@ -65,6 +65,90 @@ mod tests {
             let loaded = store::load_index(&tmp).expect("load");
             assert_eq!(loaded.chunks.len(), index.chunks.len());
             assert_eq!(loaded.root, index.root);
+            assert!(index::index_path(&tmp).is_file());
+            assert!(!index::legacy_index_path(&tmp).exists());
+            let _ = fs::remove_dir_all(&tmp);
+        });
+    }
+
+    #[test]
+    fn reads_legacy_coderag_snapshot_until_locus_index_exists() {
+        with_fixture_index_lock(|| {
+            let tmp = std::env::temp_dir()
+                .join(format!("coderag-core-legacy-index-{}", std::process::id()));
+            let _ = fs::remove_dir_all(&tmp);
+            fs::create_dir_all(&tmp).expect("tmp root");
+            fs::write(
+                tmp.join("sample.ts"),
+                "export function authenticate() { return true }\n",
+            )
+            .expect("sample");
+            let (index, _) = index::build_index(&tmp, 1_048_576).expect("index");
+            store::save_index(&tmp, &index).expect("save");
+            let canonical = tmp.canonicalize().expect("canonical");
+            let mut file_hashes = std::collections::HashMap::new();
+            file_hashes.insert("sample.ts".to_string(), "abc".to_string());
+            store::save_file_hashes(
+                &tmp,
+                &store::FileHashManifest {
+                    schema_version: store::FILE_HASH_SCHEMA_VERSION.to_string(),
+                    root: canonical.to_string_lossy().to_string(),
+                    file_hashes,
+                },
+            )
+            .expect("hashes");
+            fs::rename(tmp.join(".locus"), tmp.join(".coderag")).expect("move legacy");
+            let loaded = store::load_index(&tmp).expect("legacy index");
+            assert_eq!(loaded.chunks.len(), index.chunks.len());
+            let hashes = store::load_file_hashes(&tmp).expect("legacy hashes");
+            assert_eq!(
+                hashes.file_hashes.get("sample.ts").map(String::as_str),
+                Some("abc")
+            );
+
+            fs::write(
+                tmp.join("extra.ts"),
+                "export function billing() { return 1 }\n",
+            )
+            .expect("extra");
+            let (newer, _) = index::build_index(&tmp, 1_048_576).expect("reindex");
+            assert!(newer.chunks.len() > loaded.chunks.len());
+            store::save_index(&tmp, &newer).expect("save locus");
+            let preferred = store::load_index(&tmp).expect("prefer locus");
+            assert_eq!(preferred.chunks.len(), newer.chunks.len());
+            assert!(index::legacy_index_path(&tmp).is_file());
+            let _ = fs::remove_dir_all(&tmp);
+        });
+    }
+
+    #[test]
+    fn auto_refresh_copies_legacy_hashes_into_locus_on_cache_hit() {
+        with_fixture_index_lock(|| {
+            let tmp = std::env::temp_dir().join(format!(
+                "coderag-core-legacy-migrate-{}",
+                std::process::id()
+            ));
+            let _ = fs::remove_dir_all(&tmp);
+            fs::create_dir_all(&tmp).expect("tmp root");
+            fs::write(
+                tmp.join("sample.ts"),
+                "export function authenticate() { return true }\n",
+            )
+            .expect("sample");
+            let first =
+                index::refresh_index(&tmp, 1_048_576, index::IndexMode::Full).expect("full");
+            assert_eq!(first.1.refresh_mode, "full");
+            fs::rename(tmp.join(".locus"), tmp.join(".coderag")).expect("move legacy");
+            let migrated =
+                index::refresh_index(&tmp, 1_048_576, index::IndexMode::Auto).expect("migrate");
+            assert_eq!(migrated.1.refresh_mode, "cache_hit");
+            assert!(index::index_path(&tmp).is_file());
+            assert!(store::file_hashes_path(&tmp).is_file());
+            assert!(index::legacy_index_path(&tmp).is_file());
+            let again =
+                index::refresh_index(&tmp, 1_048_576, index::IndexMode::Auto).expect("again");
+            assert_eq!(again.1.refresh_mode, "cache_hit");
+            assert_eq!(again.0.chunks.len(), migrated.0.chunks.len());
             let _ = fs::remove_dir_all(&tmp);
         });
     }

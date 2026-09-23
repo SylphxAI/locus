@@ -17,7 +17,7 @@ A query that parses but tokenizes to nothing (punctuation, or only one-character
 
 ## Root
 
-Tool `root`, then launch `--root`, then `CODERAG_ROOT`. The path must exist. Locus canonicalizes it. Relative paths are resolved by the process that launched the server, which is a poor substitute for an absolute path. Pass an absolute path.
+Tool `root`, then launch `--root`, then `LOCUS_ROOT`, then `CODERAG_ROOT`. The path must exist. Locus canonicalizes it. Relative paths are resolved by the process that launched the server, which is a poor substitute for an absolute path. Pass an absolute path.
 
 ## Refresh
 
@@ -37,8 +37,8 @@ Files larger than 1,048,576 bytes are omitted. `.json` is not an indexed extensi
 
 Snapshots:
 
-- `.coderag/rust-index.json`
-- `.coderag/file-hashes.json`
+- `.locus/rust-index.json` and `.locus/file-hashes.json` for a new index
+- `.coderag/rust-index.json` and `.coderag/file-hashes.json` only when `.locus/rust-index.json` is absent
 
 Chunk paths inside the index are repo-relative with forward slashes. `find_related` must be given that path, not an absolute path.
 
@@ -46,7 +46,7 @@ Chunk paths inside the index are repo-relative with forward slashes. `find_relat
 
 Document frequency is computed on the full index, before filters. A filter changes which hits return. It does not recompute rarity inside the filtered set.
 
-Tokens are ASCII letters, digits, and `_`, lowercased, longer than one character. BM25 uses `k1 = 1.2` and `b = 0.75`. The formula is on the [TF-IDF page](/guide/tfidf). Hits with a zero score are dropped. The rest sort by score descending. Equal scores have no promised order. `limit` is applied last.
+Tokens are ASCII letters, digits, and `_`, lowercased, longer than one character. BM25 uses `k1 = 1.2` and `b = 0.75`. The formula is on the [BM25 page](/guide/tfidf). Hits with a zero score are dropped. The rest sort by score descending. Equal scores have no promised order. `limit` is applied last.
 
 `include_content: false` still ranks the same chunks and sets `snippet` to `null`.
 

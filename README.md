@@ -10,7 +10,7 @@ No API key. No vector database. No Docker. The default transport is stdio.
 npx -y @sylphx/locus --root=/absolute/path/to/project
 ```
 
-Locus does not search the process working directory. Pass `--root`, set `CODERAG_ROOT`, or pass `root` on the tool call. A tool `root` wins, then the launch `--root`, then `CODERAG_ROOT`.
+Locus does not search the process working directory. Pass `--root`, set `LOCUS_ROOT`, or pass `root` on the tool call. A tool `root` wins, then the launch `--root`, then `LOCUS_ROOT`. `CODERAG_ROOT` still works when `LOCUS_ROOT` is unset.
 
 Claude Code:
 
@@ -47,7 +47,7 @@ codex mcp add locus -- npx -y @sylphx/locus --root=/absolute/path/to/project
 
 `.ts` `.tsx` `.js` `.jsx` `.mjs` `.cjs` `.rs` `.md` `.py` `.go`
 
-Skipped path segments, by exact name: `node_modules`, `dist`, `target`, `.git`. This is not gitignore. Files larger than 1,048,576 bytes are skipped. The index is `.coderag/rust-index.json` and `.coderag/file-hashes.json`.
+Skipped path segments, by exact name: `node_modules`, `dist`, `target`, `.git`. This is not gitignore. Files larger than 1,048,576 bytes are skipped. New indexes are written to `.locus/rust-index.json` and `.locus/file-hashes.json`. Locus still reads `.coderag/` when `.locus/rust-index.json` is absent. Do not commit either directory.
 
 A line that looks like a symbol starts a chunk. Other files stay one chunk. The patterns are regular expressions, not a syntax tree. [Symbol chunks](https://sylphxai.github.io/locus/guide/ast-chunking).
 

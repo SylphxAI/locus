@@ -14,7 +14,7 @@ use serde_json::json;
 
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct CodebaseSearchRequest {
-    #[schemars(description = "Repository root. This value wins over the launch --root, which wins over CODERAG_ROOT.")]
+    #[schemars(description = "Repository root. This value wins over the launch --root, which wins over LOCUS_ROOT, which wins over CODERAG_ROOT.")]
     pub root: Option<String>,
     #[schemars(description = "Search query. Required. Blank text is rejected.")]
     pub query: String,
@@ -33,7 +33,7 @@ pub struct CodebaseSearchRequest {
 pub const SERVER_NAME: &str = "locus";
 pub const SERVER_VERSION: &str = "0.6.3";
 pub const SERVER_INSTRUCTIONS: &str =
-    "Locus MCP server (Rust rmcp transport). Use codebase_search for deterministic Rust TF-IDF retrieval with score explainability.";
+    "Locus MCP server (Rust rmcp transport). Use codebase_search for local BM25 retrieval with score explainability. The route id rust-tfidf is the historical name of that BM25 path.";
 
 #[derive(Clone)]
 pub struct CoderagMcp {
@@ -69,7 +69,7 @@ impl CoderagMcp {
     }
 
     #[tool(
-        description = "Search the codebase with local Rust TF-IDF. Returns ranked chunks with path, lines, symbol, score, and matched terms. Filters apply before the limit."
+        description = "Search the codebase with local BM25. Returns ranked chunks with path, lines, symbol, score, and matched terms. Filters apply before the limit. The route id rust-tfidf is the historical name of this path."
     )]
     pub fn codebase_search(
         &self,
@@ -102,7 +102,7 @@ impl CoderagMcp {
 
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct FindRelatedRequest {
-    #[schemars(description = "Repository root. This value wins over the launch --root, which wins over CODERAG_ROOT.")]
+    #[schemars(description = "Repository root. This value wins over the launch --root, which wins over LOCUS_ROOT, which wins over CODERAG_ROOT.")]
     pub root: Option<String>,
     #[schemars(description = "Known source path")]
     pub path: String,
@@ -119,10 +119,8 @@ impl ServerHandler for CoderagMcp {
             .with_instructions(SERVER_INSTRUCTIONS)
             .with_server_info(
                 Implementation::new(SERVER_NAME, SERVER_VERSION)
-                    .with_description(
-                        "Locus — local-first Rust TF-IDF code search MCP (Rust rmcp transport)",
-                    )
-                    .with_website_url("https://github.com/SylphxAI/locus"),
+                    .with_description("Locus — local BM25 code search MCP (Rust rmcp transport)")
+                    .with_website_url("https://sylphxai.github.io/locus/"),
             )
     }
 }

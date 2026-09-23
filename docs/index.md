@@ -4,7 +4,7 @@ layout: home
 hero:
   name: "Locus"
   text: "The exact code chunk for the job"
-  tagline: "Local Rust TF-IDF search for agents. Ranked chunks, on the machine, with no API key."
+  tagline: "Local BM25 search for agents. Ranked chunks, on the machine, with no API key."
   actions:
     - theme: brand
       text: Quickstart

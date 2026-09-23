@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use sha2::{Digest, Sha256};
 
-use crate::index::{index_path, SearchIndex};
+use crate::index::{index_path, index_path_for_read, SearchIndex};
 
 pub const INDEX_SCHEMA_VERSION: &str = "0.1.0";
 pub const FILE_HASH_SCHEMA_VERSION: &str = "0.1.0";
@@ -24,7 +24,22 @@ pub struct FileHashManifest {
 }
 
 pub fn file_hashes_path(root: &Path) -> PathBuf {
+    root.join(".locus").join("file-hashes.json")
+}
+
+fn legacy_file_hashes_path(root: &Path) -> PathBuf {
     root.join(".coderag").join("file-hashes.json")
+}
+
+fn file_hashes_path_for_read(root: &Path) -> PathBuf {
+    if index_path(root).exists() {
+        return file_hashes_path(root);
+    }
+    let legacy = legacy_file_hashes_path(root);
+    if legacy.exists() {
+        return legacy;
+    }
+    file_hashes_path(root)
 }
 
 pub fn hash_file_bytes(path: &Path) -> Result<String, String> {
@@ -44,7 +59,7 @@ pub fn save_file_hashes(root: &Path, manifest: &FileHashManifest) -> Result<(), 
 }
 
 pub fn load_file_hashes(root: &Path) -> Result<FileHashManifest, String> {
-    let path = file_hashes_path(root);
+    let path = file_hashes_path_for_read(root);
     let bytes = fs::read(&path).map_err(|err| format!("HASH_NOT_FOUND: {err}"))?;
     let manifest: FileHashManifest =
         serde_json::from_slice(&bytes).map_err(|err| format!("HASH_LOAD_FAILED: {err}"))?;
@@ -106,7 +121,7 @@ fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), String> {
 }
 
 pub fn load_index(root: &Path) -> Result<SearchIndex, String> {
-    let path = index_path(root);
+    let path = index_path_for_read(root);
     let bytes = fs::read(&path).map_err(|err| format!("INDEX_NOT_FOUND: {err}"))?;
     let snapshot: PersistedIndex =
         serde_json::from_slice(&bytes).map_err(|err| format!("INDEX_LOAD_FAILED: {err}"))?;

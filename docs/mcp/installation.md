@@ -30,6 +30,6 @@ A good result names the server version and a `locus-cli` path. `engine cli: unav
 
 ## Root
 
-Pass an absolute `--root`. Locus does not fall back to the working directory. The tool argument `root` overrides the launch root, which overrides `CODERAG_ROOT`.
+Pass an absolute `--root`. Locus does not fall back to the working directory. The tool argument `root` overrides the launch root, which overrides `LOCUS_ROOT`, which overrides `CODERAG_ROOT`.
 
 Unknown launch arguments fail. The only accepted ones are `doctor` and `--root`.

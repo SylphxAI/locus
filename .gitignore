@@ -31,3 +31,6 @@ packages/mcp-server/npm/*/coderag-cli
 artifacts/
 bin/native/*
 packages/mcp-server/bin/native/*
+
+# Index written by the Locus server. Read-only fallback is .coderag/.
+.locus/
