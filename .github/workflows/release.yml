@@ -3,6 +3,11 @@ name: Release
 on:
   push:
     branches: [main]
+    # Docs and the README do not change the published binary. A version bump
+    # still matches because it touches package manifests, not only markdown.
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

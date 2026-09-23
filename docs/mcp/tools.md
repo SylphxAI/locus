@@ -43,7 +43,7 @@ Wire fields are camelCase.
   "status": "ok",
   "tool": "codebase_search",
   "product": "locus",
-  "product_version": "0.6.2",
+  "product_version": "0.6.4",
   "engine": "coderag-core",
   "route": "rust-tfidf",
   "warnings": [],
