@@ -1,10 +1,9 @@
-# Vision — Locus
+# Vision
 
-Locus is the local hybrid code-search tool for agents.
+Locus is local code search for an agent that already has a repository and needs the chunk to read.
 
-- **Identity:** MCP package `@sylphx/locus`, bin `locus`, core library `@sylphx/coderag`, site <https://sylphxai.github.io/locus/>.
-- **User:** a coding agent that must find the implementation site of a behavior and the code related to it.
-- **Job:** return complete AST-bounded chunks — functions, classes, methods — with path, line range, symbol, score explanation and freshness.
-- **Promise:** the default path needs no API key, no Docker and no vector database; optional embeddings are explicit; results are deduplicated and token-budgeted.
-- **Defaults:** `fast` uses local AST chunks and lexical ranking; `quality` enables optional vectors and reranking when configured.
-- **Boundaries:** Locus owns code-chunk retrieval. Spine owns architecture claims; neither edits files or owns web research.
+- **Identity:** `@sylphx/locus`, bin `locus`, MCP `io.github.SylphxAI/locus`, site <https://sylphxai.github.io/locus/>.
+- **User:** a coding agent looking for the implementation of a behavior, or for code related to a file and line it already trusts.
+- **Job:** return ranked chunks with path, line range, symbol name, BM25 score, and the chunk text.
+- **Promise:** the server runs on the machine. No API key, Docker, or vector database. The root is explicit. Filters are exact.
+- **Boundary:** Locus does not map architecture (that is Spine), read the web, or edit files. It also does not pretend lexical search understands synonyms.

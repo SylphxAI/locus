@@ -2,11 +2,13 @@
 
 pub mod engine;
 pub mod index;
+pub mod search_input;
 pub mod store;
 pub mod tokenize;
 pub mod types;
 
 pub use engine::handle_tool;
+pub use search_input::{parse_codebase_search, ParsedCodebaseSearch, SearchInputError};
 pub use types::{SearchHit, ENGINE_NAME, ENGINE_VERSION};
 
 #[cfg(test)]

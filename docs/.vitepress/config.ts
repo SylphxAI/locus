@@ -1,14 +1,14 @@
 import { defineConfig } from 'vitepress'
 
 const title = 'Locus'
-const description = 'The exact code chunk for the job — fast local hybrid code search for agents.'
+const description = 'The exact code chunk for the job — local Rust TF-IDF search for agents.'
 const url = 'https://sylphxai.github.io/locus'
 const ogImage = `${url}/og-image.png`
 
 export default defineConfig({
 	title,
 	description,
-	base: '/',
+	base: '/locus/',
 	cleanUrls: true,
 	ignoreDeadLinks: true,
 	lastUpdated: true,
@@ -16,8 +16,8 @@ export default defineConfig({
 
 	head: [
 		// Favicon
-		['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
-		['link', { rel: 'icon', type: 'image/png', href: '/favicon.png' }],
+		['link', { rel: 'icon', type: 'image/svg+xml', href: '/locus/logo.svg' }],
+		['link', { rel: 'icon', type: 'image/png', href: '/locus/favicon.png' }],
 
 		// SEO
 		['meta', { name: 'theme-color', content: '#c4b5fd' }],
@@ -26,8 +26,7 @@ export default defineConfig({
 			'meta',
 			{
 				name: 'keywords',
-				content:
-					'Locus, code search, retrieval augmented generation, TF-IDF, BM25, vector search, embeddings, AST, semantic search, MCP, AI assistant',
+				content: 'Locus, code search, TF-IDF, BM25, MCP, local search, AI assistant',
 			},
 		],
 
@@ -54,7 +53,7 @@ export default defineConfig({
 	],
 
 	sitemap: {
-		hostname: url,
+		hostname: `${url}/`,
 	},
 
 	themeConfig: {
@@ -63,12 +62,10 @@ export default defineConfig({
 
 		nav: [
 			{ text: 'Guide', link: '/guide/getting-started' },
-			{ text: 'API', link: '/api/overview' },
 			{ text: 'MCP Server', link: '/mcp/overview' },
 			{
 				text: 'Resources',
 				items: [
-					{ text: 'Benchmark proof', link: '/benchmark' },
 					{
 						text: 'Stop code-search guessing',
 						link: '/articles/stop-code-search-guessing',
@@ -96,40 +93,16 @@ export default defineConfig({
 					items: [
 						{ text: 'What is Locus?', link: '/guide/getting-started' },
 						{ text: 'Installation', link: '/guide/installation' },
-						{ text: 'Quick Start', link: '/guide/quick-start' },
+						{ text: 'Quickstart', link: '/guide/quickstart' },
 					],
 				},
 				{
 					text: 'Core Concepts',
 					items: [
 						{ text: 'How Search Works', link: '/guide/how-search-works' },
-						{ text: 'AST Chunking', link: '/guide/ast-chunking' },
+						{ text: 'Symbol chunks', link: '/guide/ast-chunking' },
 						{ text: 'TF-IDF & BM25', link: '/guide/tfidf' },
-						{ text: 'Vector Search', link: '/guide/vector-search' },
-						{ text: 'Hybrid Search', link: '/guide/hybrid-search' },
-					],
-				},
-				{
-					text: 'Advanced',
-					items: [
-						{ text: 'Persistent Storage', link: '/guide/storage' },
-						{ text: 'File Watching', link: '/guide/file-watching' },
 						{ text: 'Language Support', link: '/guide/languages' },
-						{ text: 'Performance Tuning', link: '/guide/performance' },
-					],
-				},
-			],
-			'/api/': [
-				{
-					text: 'API Reference',
-					items: [
-						{ text: 'Overview', link: '/api/overview' },
-						{ text: 'CodebaseIndexer', link: '/api/indexer' },
-						{ text: 'PersistentStorage', link: '/api/storage' },
-						{ text: 'Search Functions', link: '/api/search' },
-						{ text: 'Embedding Providers', link: '/api/embeddings' },
-						{ text: 'AST Chunking', link: '/api/chunking' },
-						{ text: 'Types', link: '/api/types' },
 					],
 				},
 			],

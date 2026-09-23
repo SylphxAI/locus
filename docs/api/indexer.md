@@ -1,3 +1,7 @@
+::: warning Legacy library
+This page describes the old TypeScript `@sylphx/coderag` library. It is not the Locus MCP server. The live server is local Rust TF-IDF in `@sylphx/locus`. Start at the [quickstart](/guide/quickstart).
+:::
+
 # CodebaseIndexer
 
 The primary class for indexing and searching codebases. Provides TF-IDF keyword search, optional vector search, and hybrid search capabilities.

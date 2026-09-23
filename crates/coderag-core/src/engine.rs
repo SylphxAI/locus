@@ -2,7 +2,8 @@ use std::path::Path;
 use std::sync::{Mutex, OnceLock};
 use std::time::Instant;
 
-use crate::index::{find_related_index, refresh_index, search_index, IndexMode, SearchIndex};
+use crate::index::{find_related_index, refresh_index, search_index_with, IndexMode, SearchIndex, SearchOptions};
+use crate::search_input::parse_codebase_search;
 use crate::store::{load_index, save_index};
 use crate::types::ToolEnvelope;
 
@@ -111,21 +112,62 @@ fn locus_find_related(input: serde_json::Value) -> ToolEnvelope {
 
 fn coderag_search(input: serde_json::Value) -> ToolEnvelope {
     let started = Instant::now();
-    let query = match input.get("query").and_then(|v| v.as_str()) {
-        Some(value) => value,
-        None => return ToolEnvelope::error("INVALID_QUERY", "Missing required field: query"),
+    let parsed = match parse_codebase_search(&input) {
+        Ok(parsed) => parsed,
+        Err(error) => return ToolEnvelope::error(&error.code, &error.message),
     };
-    let limit = input
-        .get("limit")
-        .and_then(|v| v.as_u64())
-        .unwrap_or(10) as usize;
-
     let root = input.get("root").and_then(|v| v.as_str());
     let index = match resolve_index(root) {
         Ok(index) => index,
         Err(envelope) => return envelope,
     };
+    let results = search_index_with(
+        &index,
+        &parsed.query,
+        &SearchOptions {
+            limit: parsed.limit,
+            include_content: parsed.include_content,
+            file_extensions: parsed.file_extensions,
+            path_filter: parsed.path_filter,
+            exclude_paths: parsed.exclude_paths,
+        },
+    );
+    ToolEnvelope::ok_search(&parsed.query, results, started.elapsed().as_millis() as u64)
+}
 
-    let results = search_index(&index, query, limit);
-    ToolEnvelope::ok_search(query, results, started.elapsed().as_millis() as u64)
+#[cfg(test)]
+mod search_input_tests {
+    use super::handle_tool;
+    use serde_json::json;
+
+    #[test]
+    fn rejects_invalid_search_before_resolve_index() {
+        let missing_root = "/definitely/missing/locus-root-xyz";
+        let missing = handle_tool("coderag_search", json!({ "root": missing_root }));
+        assert_eq!(missing.code.as_deref(), Some("INVALID_QUERY"));
+        assert_eq!(missing.message.as_deref(), Some("Missing required field: query"));
+
+        let blank = handle_tool(
+            "coderag_search",
+            json!({ "query": "   ", "root": missing_root }),
+        );
+        assert_eq!(blank.code.as_deref(), Some("INVALID_QUERY"));
+        assert_eq!(blank.message.as_deref(), Some("query must not be empty"));
+
+        let null_query = handle_tool("coderag_search", json!({ "query": null, "root": missing_root }));
+        assert_eq!(null_query.message.as_deref(), Some("query must be a string"));
+
+        let limit = handle_tool(
+            "coderag_search",
+            json!({ "query": "auth", "limit": 0, "root": missing_root }),
+        );
+        assert_eq!(limit.code.as_deref(), Some("INVALID_LIMIT"));
+
+        let extensions = handle_tool(
+            "coderag_search",
+            json!({ "query": "auth", "file_extensions": [], "root": missing_root }),
+        );
+        assert_eq!(extensions.code.as_deref(), Some("INVALID_FILTER"));
+        assert!(extensions.message.unwrap().contains("file_extensions"));
+    }
 }

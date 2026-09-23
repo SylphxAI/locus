@@ -1,42 +1,30 @@
-# Locus — competitive positioning
+# Competitive positioning
 
 ## Job
 
-Local-first Rust TF-IDF **code chunk** retrieval for agents (MCP + SDK + CLI).
+Local Rust BM25 retrieval of code chunks for agents, over stdio MCP.
 
 ## Wedge
 
-Zero-config local Rust TF-IDF search that returns **AST-bounded chunks with locators**, not whole-file grep dumps or cloud-only RAG stacks.
+One command, an explicit repository root, and a ranked chunk with a path and a score. No account, no vector database, and no daemon to keep warm.
 
-## Local-first
+## What the peers are better at
 
-Default path needs no API key, no Docker vector DB, no remote index.
-
-## Peer anchors (learn; do not clone)
-
-| Peer / class | Gap we exploit |
-| --- | --- |
-| grep / ripgrep | Literal only; whole files/lines; no semantic rank |
-| Cloud RAG / hosted code index | Setup tax, network, cold start; not zero-config local |
-| Generic file RAG MCPs | Often file/window chunks without AST boundaries + explainable score |
-| IDE-only search | Not portable MCP/SDK for arbitrary agents |
-| **Spine** (sibling) | Architecture graph, not chunk retrieval — complementary, not competitor clone |
+| Peer | Where it wins | Where Locus is the smaller tool |
+| --- | --- | --- |
+| ripgrep | Literal speed, every file type, gitignore | Locus returns a symbol-sized window and a score, but only for ten extensions, and only for tokens it can spell |
+| Hosted code index | Synonyms, cross-repo, huge monorepos | Locus never leaves the machine and never claims meaning it did not tokenize |
+| Editor search | Already open, already scoped to the buffer | Locus is a portable MCP tool, not an editor feature |
+| Spine | Architecture, impact, ownership | Locus stops at the chunk |
 
 ## Non-goals
 
-- Becoming a cloud SaaS wrapper as the default path
-- Folding unrelated products into one repository
-- Replacing architecture map tools (that is Spine)
+A cloud index, a second product inside this repository, or a replacement for an architecture map.
 
-## Boundaries
-
-- **Locus** finds the right **implementation chunk**.
-- **Spine** answers path / trace / impact on the **architecture graph**.
-
-## Zero-config CTA
+## Install
 
 ```bash
 npx -y @sylphx/locus --root=/absolute/path/to/project
 ```
 
-Live **@sylphx/locus@0.5.2**. Bare MCP stdio for agents.
+The current npm line is `@sylphx/locus`. Check `npm view @sylphx/locus version` rather than a version frozen in this page.

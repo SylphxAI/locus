@@ -1,189 +1,55 @@
-# How Search Works
+# How search works
 
-Locus uses chunk-level indexing with BM25 scoring to deliver fast, accurate code search. Unlike traditional file-level search, Locus operates at the granularity of individual code blocks (functions, classes, etc.).
+`codebase_search` does four things, in order. Invalid arguments stop at step 1. The index is not touched.
 
-## Chunk-Level Indexing
+1. Parse the arguments.
+2. Resolve the repository root.
+3. Refresh the local index.
+4. Score every chunk that passes the filters, then cut to `limit`.
 
-Locus indexes code at the chunk level rather than the file level. Each chunk represents a semantic unit extracted through AST parsing.
+## Parse
 
-**Why chunk-level?**
+`query` is required. Missing, blank, and non-string queries are errors. `limit` defaults to 10 and must be an integer from 1 to 100. `include_content` defaults to true and must be a boolean.
 
-- More precise search results pointing to specific functions or classes
-- Better relevance scoring (matches terms within the same function, not scattered across a large file)
-- Enables line-level navigation with startLine and endLine metadata
+Empty arrays, blank filter strings, and extension tokens that contain a dot, a slash, or a space are `INVALID_FILTER`. `ts` and `.ts` are the same token. `tar.ts` is rejected. You filter a double extension by its final piece: `ts`.
 
-**Example:**
+A query that parses but tokenizes to nothing (punctuation, or only one-character tokens) is not an error. The result list is empty.
 
-For a TypeScript file with 3 functions, Locus creates 3 separate searchable chunks:
+## Root
 
-```typescript
-// File: utils.ts
+Tool `root`, then launch `--root`, then `CODERAG_ROOT`. The path must exist. Locus canonicalizes it. Relative paths are resolved by the process that launched the server, which is a poor substitute for an absolute path. Pass an absolute path.
 
-// Chunk 1: FunctionDeclaration (lines 1-5)
-export function parseQuery(query: string): string[] {
-  return query.toLowerCase().split(/\s+/)
-}
+## Refresh
 
-// Chunk 2: FunctionDeclaration (lines 7-11)
-export function calculateScore(tf: number, idf: number): number {
-  return tf * idf
-}
+Every search and every `find_related` call refreshes before it reads.
 
-// Chunk 3: FunctionDeclaration (lines 13-17)
-export function normalizeVector(vec: number[]): number[] {
-  const magnitude = Math.sqrt(vec.reduce((sum, v) => sum + v * v, 0))
-  return vec.map(v => v / magnitude)
-}
-```
+| What it finds | `index.refreshMode` |
+| --- | --- |
+| File hashes match the snapshot | `cache_hit` |
+| Some indexed files changed or disappeared | `incremental` |
+| No usable snapshot | `full` |
 
-Each chunk is indexed independently with its own TF-IDF vector.
+The MCP call asks for refresh. The strings `refresh` and `auto` are internal aliases for that behavior. They are not tool arguments, and they are not search profiles.
 
-## StarCoder2 Tokenization
+Skipped directory segments, exact match: `node_modules`, `dist`, `target`, `.git`. A file named `target.rs` is kept. A file inside a directory named `target` is not. This is not gitignore, and it does not read `.gitignore`.
 
-Locus uses the StarCoder2 tokenizer for code-aware tokenization. This tokenizer understands code syntax and produces better tokens than generic text tokenizers.
+Files larger than 1,048,576 bytes are omitted. `.json` is not an indexed extension.
 
-**Advantages:**
+Snapshots:
 
-- Preserves camelCase and snake_case as single tokens (`getUserById` stays intact, not split into `get`, `User`, `By`, `Id`)
-- Recognizes common code patterns (operators, keywords, identifiers)
-- Language-agnostic (works across 15+ programming languages)
+- `.coderag/rust-index.json`
+- `.coderag/file-hashes.json`
 
-**Implementation:**
+Chunk paths inside the index are repo-relative with forward slashes. `find_related` must be given that path, not an absolute path.
 
-```typescript
-import { tokenize } from '@sylphx/coderag'
+## Score, then limit
 
-const tokens = await tokenize('function getUserById(id: string)')
-// Returns: ['function', 'getUserById', '(', 'id', ':', 'string', ')']
-```
+Document frequency is computed on the full index, before filters. A filter changes which hits return. It does not recompute rarity inside the filtered set.
 
-Tokenization happens asynchronously due to WASM-based StarCoder2 model.
+Tokens are ASCII letters, digits, and `_`, lowercased, longer than one character. BM25 uses `k1 = 1.2` and `b = 0.75`. The formula is on the [TF-IDF page](/guide/tfidf). Hits with a zero score are dropped. The rest sort by score descending. Equal scores have no promised order. `limit` is applied last.
 
-## BM25 Scoring Formula
+`include_content: false` still ranks the same chunks and sets `snippet` to `null`.
 
-BM25 (Best Matching 25) improves upon basic TF-IDF with two key enhancements:
+## Related chunks
 
-1. **Term frequency saturation (k1 parameter)**: Diminishing returns for repeated terms
-2. **Document length normalization (b parameter)**: Adjusts for chunk length
-
-**Formula:**
-
-```
-score(C, Q) = Σ IDF(qi) * (f(qi, C) * (k1 + 1)) / (f(qi, C) + k1 * (1 - b + b * |C| / avgdl))
-```
-
-Where:
-- `C` = chunk (document)
-- `Q` = query
-- `f(qi, C)` = raw frequency of term qi in chunk C
-- `|C|` = chunk length (token count)
-- `avgdl` = average chunk length across all chunks
-- `k1 = 1.2` (term frequency saturation)
-- `b = 0.75` (length normalization)
-
-**Parameters:**
-
-```typescript
-// From packages/core/src/tfidf.ts
-const BM25_K1 = 1.2 // Typical range: 1.2-2.0
-const BM25_B = 0.75  // 0 = no normalization, 1 = full normalization
-```
-
-These are industry-standard values from Elasticsearch and Lucene.
-
-**How it works:**
-
-For a query `"async function error"`, BM25 scores each chunk by:
-
-1. Tokenizing the query: `["async", "function", "error"]`
-2. For each chunk, calculating term scores using the formula above
-3. Summing term scores to get final chunk score
-4. Ranking chunks by score descending
-
-## Query Caching
-
-Locus caches search results using an LRU (Least Recently Used) cache to avoid re-executing identical searches.
-
-**Cache parameters:**
-
-```typescript
-// From packages/core/src/indexer.ts
-this.searchCache = new LRUCache<SearchResult[]>(100, 5)
-// 100 entries max, 5 minute TTL
-```
-
-**Cache behavior:**
-
-- Maximum 100 cached queries
-- 5-minute time-to-live (TTL) per entry
-- LRU eviction: oldest entries removed when cache is full
-- Cache invalidation on index updates (file add/change/delete)
-
-**Implementation:**
-
-```typescript
-// Cache key includes query + options
-const cacheKey = createCacheKey(query, {
-  limit: 10,
-  fileExtensions: ['.ts'],
-  pathFilter: 'src/',
-  excludePaths: ['node_modules/']
-})
-
-const cachedResults = this.searchCache.get(cacheKey)
-if (cachedResults) {
-  return cachedResults // Cache hit
-}
-
-// Execute search...
-const results = await searchChunks(query, options)
-this.searchCache.set(cacheKey, results)
-```
-
-**Cache statistics:**
-
-Query cache performance metrics:
-
-```typescript
-const stats = searchCache.stats()
-console.log(`Hit rate: ${stats.hitRate}`) // 0-1 (1 = 100% hits)
-console.log(`Size: ${stats.size}/${stats.maxSize}`)
-```
-
-## Search Flow
-
-End-to-end search process:
-
-1. **Query tokenization**: Convert query string to tokens using StarCoder2
-2. **Cache check**: Look up results in LRU cache
-3. **SQL candidate retrieval**: Query database for chunks containing any query term
-4. **BM25 scoring**: Score each candidate chunk using BM25 formula
-5. **Filtering**: Apply file extension, path, and exclusion filters
-6. **Ranking**: Sort by BM25 score descending
-7. **Limiting**: Return top N results
-8. **Caching**: Store results in cache for future queries
-
-**Performance characteristics:**
-
-- Tokenization: ~1-5ms per query (cached after first use)
-- SQL retrieval: ~10-50ms depending on index size
-- BM25 scoring: ~1ms per 100 candidates
-- Total search time: typically 20-100ms for 10,000 chunks
-
-**SQL-based search:**
-
-Locus uses SQL for memory-efficient search:
-
-```typescript
-// Query chunks by terms
-const candidates = await storage.searchByTerms(queryTokens, {
-  limit: limit * 3 // Get 3x candidates for scoring
-})
-
-// Candidates include:
-// - chunkId, filePath, content
-// - matched terms with tfidf and rawFreq
-// - pre-computed magnitude and tokenCount
-```
-
-Pre-computed values (magnitude, tokenCount) stored in the database avoid recalculation during search.
+`find_related` does not run BM25. It finds the first chunk whose line range contains `line`, then scores other chunks by token overlap. The details and the "can be greater than 1" score are in the [tool reference](/mcp/tools).

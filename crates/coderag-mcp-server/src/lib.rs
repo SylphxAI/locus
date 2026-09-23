@@ -16,10 +16,18 @@ use serde_json::json;
 pub struct CodebaseSearchRequest {
     #[schemars(description = "Repository root. This value wins over the launch --root, which wins over CODERAG_ROOT.")]
     pub root: Option<String>,
-    #[schemars(description = "Search query")]
+    #[schemars(description = "Search query. Required. Blank text is rejected.")]
     pub query: String,
-    #[schemars(description = "Maximum number of results")]
+    #[schemars(description = "Maximum number of results after filters. Integer from 1 to 100. Defaults to 10.")]
     pub limit: Option<u64>,
+    #[schemars(description = "Include chunk text in snippet. Defaults to true. False returns locators only.")]
+    pub include_content: Option<bool>,
+    #[schemars(description = "Final file extensions to keep. `ts` and `.ts` match only `.ts`, not `.tsx`. Case-sensitive. Omit to search every indexed file.")]
+    pub file_extensions: Option<Vec<String>>,
+    #[schemars(description = "Case-sensitive path substring. Backslashes are treated as slashes.")]
+    pub path_filter: Option<String>,
+    #[schemars(description = "Case-sensitive path substrings to drop before the limit is applied.")]
+    pub exclude_paths: Option<Vec<String>>,
 }
 
 pub const SERVER_NAME: &str = "locus";
@@ -61,7 +69,7 @@ impl CoderagMcp {
     }
 
     #[tool(
-        description = "Search the codebase with Rust TF-IDF retrieval. Returns ranked hits with path, score, matched terms, and score components."
+        description = "Search the codebase with local Rust TF-IDF. Returns ranked chunks with path, lines, symbol, score, and matched terms. Filters apply before the limit."
     )]
     pub fn codebase_search(
         &self,
@@ -69,10 +77,24 @@ impl CoderagMcp {
     ) -> Result<rmcp::model::CallToolResult, ErrorData> {
         let mut args = json!({
             "query": request.query,
-            "limit": request.limit.unwrap_or(10),
         });
         if let Some(root) = request.root {
             args["root"] = json!(root);
+        }
+        if let Some(limit) = request.limit {
+            args["limit"] = json!(limit);
+        }
+        if let Some(include_content) = request.include_content {
+            args["include_content"] = json!(include_content);
+        }
+        if let Some(file_extensions) = request.file_extensions {
+            args["file_extensions"] = json!(file_extensions);
+        }
+        if let Some(path_filter) = request.path_filter {
+            args["path_filter"] = json!(path_filter);
+        }
+        if let Some(exclude_paths) = request.exclude_paths {
+            args["exclude_paths"] = json!(exclude_paths);
         }
         codebase_search::codebase_search(args)
     }
@@ -141,5 +163,17 @@ mod tests {
         assert!(schema.get("properties").is_some());
         let properties = schema.get("properties").expect("properties");
         assert!(properties.get("query").is_some());
+        assert!(properties.get("include_content").is_some());
+        assert!(properties.get("file_extensions").is_some());
+        assert!(properties.get("path_filter").is_some());
+        assert!(properties.get("exclude_paths").is_some());
+        let required = schema
+            .get("required")
+            .and_then(|value| value.as_array())
+            .expect("required");
+        let required: Vec<_> = required.iter().filter_map(|value| value.as_str()).collect();
+        assert!(required.contains(&"query"));
+        assert!(!required.contains(&"file_extensions"));
+        assert!(!required.contains(&"include_content"));
     }
 }

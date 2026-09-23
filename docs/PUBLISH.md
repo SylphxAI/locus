@@ -4,7 +4,7 @@
 | --- | --- |
 | Brand | Locus |
 | Canonical npm | `@sylphx/locus` |
-| Version | `0.6.0` |
+| Version | `0.6.2` |
 | MCP Registry | `io.github.SylphxAI/locus` |
 | Core library | `@sylphx/coderag` |
 | Natives | `@sylphx/locus-<platform>` |

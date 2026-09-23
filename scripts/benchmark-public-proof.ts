@@ -1,7 +1,8 @@
 #!/usr/bin/env bun
 /**
- * Reproducible public benchmark for Locus README claims.
- * Indexes fixtures/benchmark-corpus, runs hybrid TF-IDF search 20x, prints p50 latency.
+ * TypeScript indexer benchmark. Not MCP proof.
+ * Indexes fixtures/benchmark-corpus with MemoryStorage and profile coderag-public-proof.
+ * Does not measure @sylphx/locus.
  */
 
 import fs from 'node:fs'

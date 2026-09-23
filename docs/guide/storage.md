@@ -1,3 +1,7 @@
+::: warning Legacy library
+This page describes the old TypeScript `@sylphx/coderag` library. It is not the Locus MCP server. The live server is local Rust TF-IDF in `@sylphx/locus`. Start at the [quickstart](/guide/quickstart).
+:::
+
 # Persistent Storage
 
 Locus uses SQLite with LibSQL for persistent, memory-efficient storage. This enables incremental updates and low-memory operation.
