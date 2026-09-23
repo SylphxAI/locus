@@ -14,7 +14,7 @@ use serde_json::json;
 
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct CodebaseSearchRequest {
-    #[schemars(description = "Repository root path; defaults to CODERAG_ROOT when omitted")]
+    #[schemars(description = "Repository root. This value wins over the launch --root, which wins over CODERAG_ROOT.")]
     pub root: Option<String>,
     #[schemars(description = "Search query")]
     pub query: String,
@@ -80,7 +80,7 @@ impl CoderagMcp {
 
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct FindRelatedRequest {
-    #[schemars(description = "Repository root path; defaults to CODERAG_ROOT when omitted")]
+    #[schemars(description = "Repository root. This value wins over the launch --root, which wins over CODERAG_ROOT.")]
     pub root: Option<String>,
     #[schemars(description = "Known source path")]
     pub path: String,

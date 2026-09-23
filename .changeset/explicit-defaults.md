@@ -2,4 +2,4 @@
 "@sylphx/locus": patch
 ---
 
-Honor a `--root` launch path for code search, and describe the default retrieval as Rust TF-IDF instead of hybrid search.
+Honor an explicit tool `root` over the launch `--root` and `CODERAG_ROOT`. Search refreshes the Rust TF-IDF index when needed and reports that refresh.

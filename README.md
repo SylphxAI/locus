@@ -15,6 +15,8 @@ For Claude Code:
 claude mcp add locus -- npx -y @sylphx/locus --root=/absolute/path/to/project
 ```
 
+A `root` on the tool call wins. Otherwise Locus uses the launch `--root`, then `CODERAG_ROOT`.
+
 ## The fastest useful workflow
 
 Ask a natural-language question:
