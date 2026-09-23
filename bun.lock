@@ -59,7 +59,7 @@
     },
     "packages/mcp-server": {
       "name": "@sylphx/locus",
-      "version": "0.6.1",
+      "version": "0.6.2",
       "bin": {
         "locus": "./bin/locus",
       },
@@ -74,27 +74,27 @@
         "typescript": "^7.0.2",
       },
       "optionalDependencies": {
-        "@sylphx/locus-darwin-arm64": "0.6.0",
-        "@sylphx/locus-darwin-x64": "0.6.0",
-        "@sylphx/locus-linux-arm64-gnu": "0.6.0",
-        "@sylphx/locus-linux-x64-gnu": "0.6.0",
+        "@sylphx/locus-darwin-arm64": "0.6.2",
+        "@sylphx/locus-darwin-x64": "0.6.2",
+        "@sylphx/locus-linux-arm64-gnu": "0.6.2",
+        "@sylphx/locus-linux-x64-gnu": "0.6.2",
       },
     },
     "packages/mcp-server/npm/darwin-arm64": {
       "name": "@sylphx/locus-darwin-arm64",
-      "version": "0.6.1",
+      "version": "0.6.2",
     },
     "packages/mcp-server/npm/darwin-x64": {
       "name": "@sylphx/locus-darwin-x64",
-      "version": "0.6.1",
+      "version": "0.6.2",
     },
     "packages/mcp-server/npm/linux-arm64-gnu": {
       "name": "@sylphx/locus-linux-arm64-gnu",
-      "version": "0.6.1",
+      "version": "0.6.2",
     },
     "packages/mcp-server/npm/linux-x64-gnu": {
       "name": "@sylphx/locus-linux-x64-gnu",
-      "version": "0.6.1",
+      "version": "0.6.2",
     },
   },
   "packages": {
@@ -1213,14 +1213,6 @@
     "@sylphx/locus/@biomejs/biome": ["@biomejs/biome@2.5.3", "", { "optionalDependencies": { "@biomejs/cli-darwin-arm64": "2.5.3", "@biomejs/cli-darwin-x64": "2.5.3", "@biomejs/cli-linux-arm64": "2.5.3", "@biomejs/cli-linux-arm64-musl": "2.5.3", "@biomejs/cli-linux-x64": "2.5.3", "@biomejs/cli-linux-x64-musl": "2.5.3", "@biomejs/cli-win32-arm64": "2.5.3", "@biomejs/cli-win32-x64": "2.5.3" }, "bin": { "biome": "bin/biome" } }, "sha512-MrJswFdei9EfDwwUy2tQrPDpK0AO+RmMFvBoaaJ6ayBc3sUbHdCE+XG5N8vp+5So41ZupZJQm0roHFFhMGVD7A=="],
 
     "@sylphx/locus/@sylphx/biome-config": ["@sylphx/biome-config@0.4.1", "", { "peerDependencies": { "@biomejs/biome": "^2.0.0" } }, "sha512-yNdrXKcnhrXK+OB2WLEJix6cryj3PME5DbKpGFMJGA6/B1/+mpk2ChKiohifrf956FKQ3JTAqhLhZfY7lu18yA=="],
-
-    "@sylphx/locus/@sylphx/locus-darwin-arm64": ["@sylphx/locus-darwin-arm64@0.6.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-L2sG0fFcE7tOxR8vXV56znhzqIBT4HG8GnA4iXyCmbYCAi/AtP2Q+DcSOzcyf3sy0QLZ/Ys8BWVLdbqh5T1l8g=="],
-
-    "@sylphx/locus/@sylphx/locus-darwin-x64": ["@sylphx/locus-darwin-x64@0.6.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-yB4SbY2kqk13M/3qrctPbySiv3su7tKIuSMcaj/Fikq+6FkMUq0IzYrdMhiwlL35aTvf2uTb+uGwuNe+fUJn3A=="],
-
-    "@sylphx/locus/@sylphx/locus-linux-arm64-gnu": ["@sylphx/locus-linux-arm64-gnu@0.6.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-AUsHqD0g0m0+p2c0/e5Mv8JAwDDr3ElIn6nYgdrIYg/L9pM7rUEoRrCiVyJHt/lRnNr8rd2nmJy+7N6HDBoOLw=="],
-
-    "@sylphx/locus/@sylphx/locus-linux-x64-gnu": ["@sylphx/locus-linux-x64-gnu@0.6.0", "", { "os": "linux", "cpu": "x64" }, "sha512-zn1in4tNz1jtQipPslJImOWtHn/eD1DAlbxsBwGELtX37T4aV2BQP31ojCcC0kOgL8WRiSTsSasXvS7LCPfj2w=="],
 
     "@sylphx/synth-c/@sylphx/synth": ["@sylphx/synth@0.3.2", "", {}, "sha512-g+8RFCzuxkU2OwC4T+Gn5BWjV93Ehhzatm7ccwM7yzhD22VBIe/wZ58WavoDzwOQg0uLbFRcURYDKEdXYevboA=="],
 

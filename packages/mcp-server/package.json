@@ -1,6 +1,6 @@
 {
 	"name": "@sylphx/locus",
-	"version": "0.6.1",
+	"version": "0.6.2",
 	"description": "Locus — the exact code chunk for the job. Local Rust TF-IDF code search for agents.",
 	"homepage": "https://sylphxai.github.io/locus/",
 	"type": "module",
@@ -38,10 +38,10 @@
 		"@sylphx/coderag": "workspace:*"
 	},
 	"optionalDependencies": {
-		"@sylphx/locus-darwin-arm64": "0.6.0",
-		"@sylphx/locus-darwin-x64": "0.6.0",
-		"@sylphx/locus-linux-x64-gnu": "0.6.0",
-		"@sylphx/locus-linux-arm64-gnu": "0.6.0"
+		"@sylphx/locus-darwin-arm64": "0.6.2",
+		"@sylphx/locus-darwin-x64": "0.6.2",
+		"@sylphx/locus-linux-x64-gnu": "0.6.2",
+		"@sylphx/locus-linux-arm64-gnu": "0.6.2"
 	},
 	"devDependencies": {
 		"@types/bun": "^1.3.3",
