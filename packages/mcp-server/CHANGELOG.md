@@ -1,5 +1,11 @@
 # @sylphx/codebase-search-mcp
 
+## 0.6.1
+
+### Patch Changes
+
+- The published package gains discovery keywords for the queries its users type: code search, semantic search, AST, codebase indexing, RAG, retrieval.
+
 ## 0.4.2
 
 ### Patch Changes

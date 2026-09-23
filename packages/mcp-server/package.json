@@ -1,6 +1,6 @@
 {
 	"name": "@sylphx/locus",
-	"version": "0.6.0",
+	"version": "0.6.1",
 	"description": "Locus — the exact code chunk for the job. Fast local hybrid code search for agents.",
 	"homepage": "https://sylphxai.github.io/locus/",
 	"type": "module",
