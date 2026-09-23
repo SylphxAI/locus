@@ -15,6 +15,8 @@ For Claude Code:
 claude mcp add locus -- npx -y @sylphx/locus --root=/absolute/path/to/project
 ```
 
+A `root` on the tool call wins. Otherwise Locus uses the launch `--root`, then `CODERAG_ROOT`.
+
 ## The fastest useful workflow
 
 Ask a natural-language question:
@@ -43,7 +45,7 @@ score explanations, freshness, and explicit gaps.
 
 | Tool | Purpose |
 | --- | --- |
-| `codebase_search` | Hybrid local search over code chunks |
+| `codebase_search` | Local Rust TF-IDF search over code chunks |
 | `find_related` | Find related chunks from a known file and line |
 
 The public surface stays small. Indexing is cached locally and refreshed when
@@ -63,7 +65,7 @@ Locus does not hide expensive work behind “auto”.
 ## Why agents use it
 
 - AST boundaries return functions, classes, and methods.
-- Hybrid ranking combines lexical and semantic evidence when available.
+- Rust TF-IDF ranks the default results. Optional embeddings can add semantic evidence when configured.
 - Results include score components instead of opaque ordering.
 - Token budgets and dedup keep context small.
 - Local indexes keep code on the machine.

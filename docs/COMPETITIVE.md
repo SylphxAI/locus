@@ -2,11 +2,11 @@
 
 ## Job
 
-Local-first hybrid **code chunk** retrieval for agents (MCP + SDK + CLI).
+Local-first Rust TF-IDF **code chunk** retrieval for agents (MCP + SDK + CLI).
 
 ## Wedge
 
-Zero-config local hybrid search that returns **AST-bounded chunks with locators**, not whole-file grep dumps or cloud-only RAG stacks.
+Zero-config local Rust TF-IDF search that returns **AST-bounded chunks with locators**, not whole-file grep dumps or cloud-only RAG stacks.
 
 ## Local-first
 
@@ -25,7 +25,7 @@ Default path needs no API key, no Docker vector DB, no remote index.
 ## Non-goals
 
 - Becoming a cloud SaaS wrapper as the default path
-- Multi-product monorepo for star aggregation
+- Folding unrelated products into one repository
 - Replacing architecture map tools (that is Spine)
 
 ## Boundaries

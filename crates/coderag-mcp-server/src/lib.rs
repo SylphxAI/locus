@@ -1,6 +1,7 @@
 pub mod cli_bridge;
 pub mod codebase_search;
 pub mod http_transport;
+pub mod launch_args;
 pub mod tool_routes;
 
 use rmcp::{
@@ -13,7 +14,7 @@ use serde_json::json;
 
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct CodebaseSearchRequest {
-    #[schemars(description = "Repository root path; defaults to CODERAG_ROOT when omitted")]
+    #[schemars(description = "Repository root. This value wins over the launch --root, which wins over CODERAG_ROOT.")]
     pub root: Option<String>,
     #[schemars(description = "Search query")]
     pub query: String,
@@ -79,7 +80,7 @@ impl CoderagMcp {
 
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct FindRelatedRequest {
-    #[schemars(description = "Repository root path; defaults to CODERAG_ROOT when omitted")]
+    #[schemars(description = "Repository root. This value wins over the launch --root, which wins over CODERAG_ROOT.")]
     pub root: Option<String>,
     #[schemars(description = "Known source path")]
     pub path: String,
@@ -97,7 +98,7 @@ impl ServerHandler for CoderagMcp {
             .with_server_info(
                 Implementation::new(SERVER_NAME, SERVER_VERSION)
                     .with_description(
-                        "Locus — local-first hybrid code search MCP (Rust rmcp transport)",
+                        "Locus — local-first Rust TF-IDF code search MCP (Rust rmcp transport)",
                     )
                     .with_website_url("https://github.com/SylphxAI/locus"),
             )

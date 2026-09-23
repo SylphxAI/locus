@@ -12,6 +12,7 @@ export default defineConfig({
 	cleanUrls: true,
 	ignoreDeadLinks: true,
 	lastUpdated: true,
+	appearance: 'dark',
 
 	head: [
 		// Favicon
@@ -19,7 +20,7 @@ export default defineConfig({
 		['link', { rel: 'icon', type: 'image/png', href: '/favicon.png' }],
 
 		// SEO
-		['meta', { name: 'theme-color', content: '#6366f1' }],
+		['meta', { name: 'theme-color', content: '#c4b5fd' }],
 		['meta', { name: 'author', content: 'Sylphx' }],
 		[
 			'meta',

@@ -3,7 +3,7 @@ layout: home
 hero:
   name: "Locus"
   text: "The exact code chunk for the job"
-  tagline: "Find implementation-ready code with fast local hybrid search and related-code discovery."
+  tagline: "Find implementation-ready code with local Rust TF-IDF search and related-code discovery."
   actions:
     - theme: brand
       text: Quickstart
