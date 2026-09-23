@@ -80,6 +80,15 @@ export default defineConfig({
 		],
 
 		sidebar: {
+			'/': [
+				{
+					text: 'Product',
+					items: [
+						{ text: 'Vision', link: '/vision' },
+						{ text: 'Capabilities', link: '/capabilities' },
+					],
+				},
+			],
 			'/guide/': [
 				{
 					text: 'Introduction',

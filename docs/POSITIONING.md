@@ -1,58 +1,11 @@
-# Locus — positioning
+# Positioning — Locus
 
-## One-liner
+**One-liner:** The exact code chunk for the job.
 
-**Locus**: Local-first hybrid code search for agents — find the right AST chunk, not a grep dump.
+- **User:** a coding agent that must find the implementation site of a behavior and the code related to it.
+- **Job:** return AST-bounded code chunks with path, line range, symbol, score explanation and freshness.
+- **Promise:** the default path is local, needs no API key, no Docker and no vector database, and returns deduplicated, token-budgeted results.
+- **Identity:** MCP package `@sylphx/locus`, bin `locus`, core library `@sylphx/coderag`, site <https://sylphxai.github.io/locus/>.
+- **Companion tools:** Citra, Iris, Cue, Spine, Locus and Lookout are independent products composed through public MCP and SDK contracts. Locus finds the code chunk; Spine maps the repository architecture.
 
-## Why agents use this
-
-Agents need the **implementation site** of a behavior: function, class, method. Locus indexes a repo
-locally, ranks hybrid TF-IDF (+ optional vectors), and returns citeable chunks with path and line ranges.
-
-## Not Spine
-
-| Product | Job |
-| --- | --- |
-| **Locus** (`coderag`) | Find the right **code chunk** (semantic / hybrid retrieval) |
-| **Spine** (`architecture-reader-mcp`) | Map **architecture**: path, trace, impact, boundaries |
-
-Compose both via public MCP/SDK contracts. Do not merge products.
-
-## Surfaces
-
-| Surface | Role |
-| --- | --- |
-| MCP | Agent tools over stdio (`codebase_search`) |
-| CLI | Human/scriptable brand bin (`locus`) |
-| SDK | `@sylphx/coderag` programmatic library for apps and dogfood |
-
-## Primary tools
-
-- `codebase_search` — primary agent retrieval (index + search envelope)
-
-Transitional aliases may exist in the engine (`coderag_search`, `coderag_index`) but
-public agent UX leads with **one clear tool**.
-
-## Evidence
-
-See [EVIDENCE_CONTRACT.md](./EVIDENCE_CONTRACT.md).
-
-## Independence
-
-See [PRODUCT_INDEPENDENCE.md](./PRODUCT_INDEPENDENCE.md).
-
-## Competitive
-
-See [COMPETITIVE.md](./COMPETITIVE.md).
-
-## Completion bar
-
-See [IPPB.md](./IPPB.md).
-
-## Zero-config CTA
-
-```bash
-npx -y @sylphx/locus --root=/absolute/path/to/project
-```
-
-Live **@sylphx/locus@0.5.2**. Bare MCP stdio for agents.
+See [vision.md](./vision.md) and [capabilities.md](./capabilities.md) for the destination and the owned capabilities. [TOOL_SURFACE.md](./TOOL_SURFACE.md) is the tool policy and [EVIDENCE_CONTRACT.md](./EVIDENCE_CONTRACT.md) is the result contract.
