@@ -4,7 +4,7 @@
 	"commit": false,
 	"fixed": [
 		[
-			"@sylphx/coderag-mcp",
+			"@sylphx/locus",
 			"@sylphx/locus-darwin-arm64",
 			"@sylphx/locus-darwin-x64",
 			"@sylphx/locus-linux-x64-gnu",
