@@ -1,5 +1,11 @@
 # @sylphx/codebase-search-mcp
 
+## 0.6.3
+
+### Patch Changes
+
+- 9e6d174: Search filters (`file_extensions`, `path_filter`, `exclude_paths`, `include_content`) apply before the limit. Docs describe the live Rust TF-IDF server.
+
 ## 0.6.2
 
 ### Patch Changes
