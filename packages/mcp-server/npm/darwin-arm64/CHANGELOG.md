@@ -1,5 +1,7 @@
 # @sylphx/locus-darwin-arm64
 
+## 0.6.3
+
 ## 0.6.2
 
 ## 0.4.2

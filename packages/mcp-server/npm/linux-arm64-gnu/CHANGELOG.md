@@ -1,5 +1,7 @@
 # @sylphx/locus-linux-arm64-gnu
 
+## 0.6.3
+
 ## 0.6.2
 
 ## 0.4.2
