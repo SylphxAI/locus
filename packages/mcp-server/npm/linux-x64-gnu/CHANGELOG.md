@@ -1,5 +1,7 @@
 # @sylphx/locus-linux-x64-gnu
 
+## 0.6.2
+
 ## 0.4.2
 
 ### Patch Changes

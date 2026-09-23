@@ -1,5 +1,11 @@
 # @sylphx/codebase-search-mcp
 
+## 0.6.2
+
+### Patch Changes
+
+- d560ab0: Honor an explicit tool `root` over the launch `--root` and `CODERAG_ROOT`. Search refreshes the Rust TF-IDF index when needed and reports that refresh.
+
 ## 0.6.1
 
 ### Patch Changes
