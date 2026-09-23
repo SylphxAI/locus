@@ -3,7 +3,7 @@
 ## Principles (hard)
 
 1. **Less dependency** — default path must not require cloud APIs, vector DBs, or ML npm wheels  
-2. **Zero config** — `npx @sylphx/locus --root=…` works offline with local TF-IDF  
+2. **Zero config** — `npx @sylphx/locus --root=…` works offline with local BM25  
 3. **Local first, cloud optional** — embeddings / remote providers only when user configures them  
 4. **Speed / size / performance** — prefer single native MCP binary; avoid dual full stacks  
 5. **Rust first** — MCP + retrieval engine native; fail-closed without TS stdio fallback  
@@ -14,7 +14,7 @@
 | Layer | Status | Evidence |
 | --- | --- | --- |
 | MCP default | **Rust-first** | `bin/locus` launches native `locus-mcp-server`; no TS stdio fallback |
-| Zero-config search | **Yes** | Local TF-IDF / AST chunk path; no API key |
+| Zero-config search | **Yes** | Local BM25 over regex symbol chunks; no API key |
 | Package size (MCP) | **~10 MB unpacked** | primarily staged native `locus-cli` + `locus-mcp-server` |
 | TS core `@sylphx/coderag` | **Overweight vs principle** | hard deps include `@huggingface/transformers`, `@ai-sdk/openai`, `ai`, `drizzle-orm`, `@libsql/client`, plus many `@sylphx/synth-*` optionalDeps |
 | Cloud optional | **Partial** | OpenAI / HF present as *library* deps even when MCP path does not need them |
@@ -22,7 +22,7 @@
 ## Target architecture (Final Decision direction)
 
 ```
-Agent ──MCP──► locus (native rmcp) ──► locus-cli (Rust TF-IDF/AST)
+Agent ──MCP──► locus (native rmcp) ──► locus-cli (Rust BM25, regex symbol chunks)
                                               │
 SDK (optional thin) ──► same Rust engine OR pure-Rust crate bindings
                                               │
@@ -31,7 +31,7 @@ Optional cloud ── only if user sets provider config (peer/optional dep)
 
 ### Non-negotiable targets
 
-1. **MCP install path** remains zero-config, local TF-IDF, no API key.  
+1. **MCP install path** remains zero-config, local BM25, no API key.  
 2. **SDK package** must not force HF transformers / OpenAI SDK on every install:  
    - move `@huggingface/transformers`, `@ai-sdk/openai`, `ai`, LanceDB to **optionalPeers** or a separate `@sylphx/locus-vector` package  
    - keep pure index/search SDK thin (or document “MCP-only recommended”)  

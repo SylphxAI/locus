@@ -1,3 +1,7 @@
+::: warning Legacy library
+This page describes an old TypeScript design. It is not the Locus MCP server. The live server is local BM25 in `@sylphx/locus`. Start at the [quickstart](/guide/quickstart).
+:::
+
 # Feature Analysis - Codebase Search v1.0
 
 ## ✅ Current Features

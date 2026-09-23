@@ -40,7 +40,7 @@ Anything else, including a size flag, is an unknown argument. The 1,048,576-byte
 
 1. `root` on the tool call
 2. `--root` from the launch command
-3. `CODERAG_ROOT`
+3. `LOCUS_ROOT`, then `CODERAG_ROOT` when `LOCUS_ROOT` is unset
 
 There is no fallback to the current working directory. A tool `root` does not rewrite the environment.
 

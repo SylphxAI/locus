@@ -1,6 +1,6 @@
 # Locus (`@sylphx/locus`)
 
-Local Rust TF-IDF search for coding agents. Two tools: `codebase_search` and `find_related`.
+Local BM25 search for coding agents. Two tools: `codebase_search` and `find_related`. The route id `rust-tfidf` is the historical name of that ranker.
 
 ```bash
 npx -y @sylphx/locus --root=/absolute/path/to/project
@@ -16,7 +16,7 @@ Locus does not default to the current directory.
 
 1. `root` on the tool call
 2. Launch `--root` (`--root=PATH` or `--root PATH`)
-3. `CODERAG_ROOT`
+3. `LOCUS_ROOT`, then `CODERAG_ROOT` when `LOCUS_ROOT` is unset
 
 Launch arguments are only `doctor` and `--root`.
 
@@ -40,7 +40,7 @@ Pass the repo-relative path (forward slashes) and a positive line inside a chunk
 
 Indexed extensions: `.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`, `.cjs`, `.rs`, `.md`, `.py`, `.go`.
 
-Skipped path segments: `node_modules`, `dist`, `target`, `.git`. Not gitignore. Files larger than 1,048,576 bytes are skipped. Files live at `.coderag/rust-index.json` and `.coderag/file-hashes.json`.
+Skipped path segments: `node_modules`, `dist`, `target`, `.git`. Not gitignore. Files larger than 1,048,576 bytes are skipped. New indexes are written to `.locus/rust-index.json` and `.locus/file-hashes.json`. `.coderag/` is read only when `.locus/rust-index.json` is absent. Do not commit either directory.
 
 ## Platforms
 

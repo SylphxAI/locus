@@ -1,7 +1,7 @@
 {
 	"name": "@sylphx/coderag",
 	"version": "0.2.0",
-	"description": "Legacy TypeScript library kept beside Locus. The live MCP server is @sylphx/locus (local Rust TF-IDF).",
+	"description": "Legacy TypeScript library kept beside Locus. The live MCP server is @sylphx/locus (local BM25; route id rust-tfidf is historical).",
 	"type": "module",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",

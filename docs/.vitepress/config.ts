@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitepress'
 
 const title = 'Locus'
-const description = 'The exact code chunk for the job — local Rust TF-IDF search for agents.'
+const description = 'The exact code chunk for the job — local BM25 search for agents.'
 const url = 'https://sylphxai.github.io/locus'
 const ogImage = `${url}/og-image.png`
 
@@ -26,7 +26,7 @@ export default defineConfig({
 			'meta',
 			{
 				name: 'keywords',
-				content: 'Locus, code search, TF-IDF, BM25, MCP, local search, AI assistant',
+				content: 'Locus, code search, BM25, MCP, local search, AI assistant',
 			},
 		],
 
@@ -101,7 +101,7 @@ export default defineConfig({
 					items: [
 						{ text: 'How Search Works', link: '/guide/how-search-works' },
 						{ text: 'Symbol chunks', link: '/guide/ast-chunking' },
-						{ text: 'TF-IDF & BM25', link: '/guide/tfidf' },
+						{ text: 'BM25', link: '/guide/tfidf' },
 						{ text: 'Language Support', link: '/guide/languages' },
 					],
 				},

@@ -1,20 +1,20 @@
 {
 	"$schema": "https://context7.com/schema.json",
 	"name": "Locus",
-	"description": "Local Rust TF-IDF search for agents. Ranked chunks, on the machine, with no API key.",
+	"description": "Local BM25 search for agents. Ranked chunks, on the machine, with no API key.",
 	"repository": "https://github.com/SylphxAI/locus",
 	"documentation": "https://sylphxai.github.io/locus/",
 	"npm": "@sylphx/locus",
 	"rules": [
-		"The live server is @sylphx/locus from SylphxAI/locus. It ranks chunks with local Rust TF-IDF and does not call an embedding API.",
-		"Pass an absolute --root. Locus does not default to the current working directory. Root order is the tool argument, then launch --root, then CODERAG_ROOT.",
+		"The live server is @sylphx/locus from SylphxAI/locus. It ranks chunks with local BM25 and does not call an embedding API. The route id rust-tfidf is the historical name of that ranker.",
+		"Pass an absolute --root. Locus does not default to the current working directory. Root order is the tool argument, then launch --root, then LOCUS_ROOT, then CODERAG_ROOT.",
 		"Launch arguments are only doctor and --root. HTTP listens only when MCP_TRANSPORT=http or CODERAG_MCP_TRANSPORT=http. The default is stdio.",
 		"codebase_search scores with BM25 (k1 1.2, b 0.75). login does not match authenticate. A query that tokenizes to nothing returns an empty result.",
 		"file_extensions, path_filter, and exclude_paths apply before limit. The default limit is 10 and the maximum is 100. ts and .ts both mean the ts extension. .ts does not match .tsx.",
 		"Symbol chunks are line-start regular expressions, not a syntax tree. Indexed extensions are .ts .tsx .js .jsx .mjs .cjs .rs .md .py .go.",
-		"The index files are .coderag/rust-index.json and .coderag/file-hashes.json. Exact skipped segments are node_modules, dist, target, and .git. Files larger than 1048576 bytes are skipped.",
+		"New indexes are written to .locus/rust-index.json and .locus/file-hashes.json. .coderag/ is read only when .locus/rust-index.json is absent. Exact skipped segments are node_modules, dist, target, and .git. Files larger than 1048576 bytes are skipped.",
 		"find_related needs a repository-relative forward-slash path. Its limit defaults to 10. An empty result is an MCP internal error: No related chunks found for that location.",
-		"The top-level route is rust-tfidf or rust-related. include_content defaults to true. Set it false and snippet is null."
+		"The top-level route is rust-tfidf or rust-related. rust-tfidf is the historical id of the BM25 path, not a TF-IDF score. include_content defaults to true. Set it false and snippet is null."
 	],
 	"folders": [
 		{
@@ -23,7 +23,7 @@
 		},
 		{
 			"path": "crates/coderag-core/src",
-			"description": "Rust TF-IDF index and search"
+			"description": "BM25 index and search"
 		},
 		{
 			"path": "crates/coderag-mcp-server/src",

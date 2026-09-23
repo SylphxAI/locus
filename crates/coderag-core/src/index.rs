@@ -69,8 +69,16 @@ pub fn refresh_index(
         .map_err(|e| format!("INVALID_ROOT: {e}"))?;
     let inventory = inventory_files(&canonical, max_file_bytes)?;
 
+    // A cache hit used to return without writing. The CLI then saved only the
+    // index into `.locus/`, leaving hashes in `.coderag/`. The next call saw
+    // the new index, refused the legacy hashes, and rebuilt the repository.
+    let loaded_legacy = !index_path(&canonical).is_file();
     if let (Ok(index), Ok(stored)) = (load_index(&canonical), load_file_hashes(&canonical)) {
         if stored.file_hashes == inventory {
+            if loaded_legacy {
+                save_index(&canonical, &index)?;
+                save_file_hashes(&canonical, &stored)?;
+            }
             return Ok((
                 index.clone(),
                 IndexStats {
@@ -598,7 +606,25 @@ fn chunk_matches_filters(chunk: &Chunk, options: &SearchOptions) -> bool {
 }
 
 pub fn index_path(root: &Path) -> PathBuf {
+    root.join(".locus").join("rust-index.json")
+}
+
+pub fn legacy_index_path(root: &Path) -> PathBuf {
     root.join(".coderag").join("rust-index.json")
+}
+
+/// Writes always use `.locus`. Read `.coderag` only when that new index is absent
+/// and the legacy file is still there.
+pub fn index_path_for_read(root: &Path) -> PathBuf {
+    let current = index_path(root);
+    if current.exists() {
+        return current;
+    }
+    let legacy = legacy_index_path(root);
+    if legacy.exists() {
+        return legacy;
+    }
+    current
 }
 
 #[cfg(test)]

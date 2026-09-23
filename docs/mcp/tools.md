@@ -9,7 +9,7 @@ Search the index with BM25. Filters run before `limit`. The top-level `route` is
 | Field | Required | Default | Rule |
 | --- | --- | --- | --- |
 | `query` | yes | | Non-empty string |
-| `root` | no | launch `--root`, then `CODERAG_ROOT` | No working-directory default |
+| `root` | no | launch `--root`, then `LOCUS_ROOT`, then `CODERAG_ROOT` | No working-directory default |
 | `limit` | no | 10 | Integer from 1 to 100 |
 | `include_content` | no | `true` | Boolean |
 | `file_extensions` | no | every indexed file | Non-empty array of strings |

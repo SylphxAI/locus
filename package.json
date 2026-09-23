@@ -2,7 +2,7 @@
 	"name": "locus-workspace",
 	"version": "0.0.0",
 	"private": true,
-	"description": "Locus — the exact code chunk for the job. Fast local Rust TF-IDF search for agents.",
+	"description": "Locus — the exact code chunk for the job. Fast local BM25 search for agents.",
 	"workspaces": [
 		"packages/*",
 		"packages/mcp-server/npm/*"

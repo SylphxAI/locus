@@ -5,7 +5,7 @@
 	"capturedFrom": "rust-tfidf-shipped-path",
 	"corpusRoot": "fixtures/benchmark-corpus",
 	"route": "rust-tfidf",
-	"notes": "Frozen authority contract for Rust-First parity. Top-hit paths and ranked paths captured once from the shipped Rust TF-IDF engine; regressions must match exactly.",
+	"notes": "Frozen authority contract for Rust-First parity. Top-hit paths and ranked paths captured once from the shipped Rust BM25 engine (route id rust-tfidf); regressions must match exactly.",
 	"cases": [
 		{
 			"id": "auth-login",

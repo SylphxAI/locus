@@ -1,6 +1,6 @@
 # Locus
 
-> Local Rust TF-IDF search for agents. Ranked chunks, on the machine, with no API key.
+> Local BM25 search for agents. Ranked chunks, on the machine, with no API key.
 
 Locus is the `@sylphx/locus` MCP server from [SylphxAI/locus](https://github.com/SylphxAI/locus). You name the repository. It ranks code chunks with BM25. This path does not call an embedding API.
 
@@ -11,7 +11,7 @@ Locus is the `@sylphx/locus` MCP server from [SylphxAI/locus](https://github.com
 - Quickstart: https://sylphxai.github.io/locus/guide/quickstart
 - How Search Works: https://sylphxai.github.io/locus/guide/how-search-works
 - Symbol chunks: https://sylphxai.github.io/locus/guide/ast-chunking
-- TF-IDF and BM25: https://sylphxai.github.io/locus/guide/tfidf
+- BM25: https://sylphxai.github.io/locus/guide/tfidf
 - Language Support: https://sylphxai.github.io/locus/guide/languages
 - Vision: https://sylphxai.github.io/locus/vision
 - Capabilities: https://sylphxai.github.io/locus/capabilities
@@ -30,7 +30,7 @@ Locus is the `@sylphx/locus` MCP server from [SylphxAI/locus](https://github.com
 
 ### Explicit root
 
-Pass an absolute `--root`. Locus does not default to the current working directory. Root order is the tool argument, then launch `--root`, then `CODERAG_ROOT`.
+Pass an absolute `--root`. Locus does not default to the current working directory. Root order is the tool argument, then launch `--root`, then `LOCUS_ROOT`, then `CODERAG_ROOT`.
 
 ### Lexical ranking
 
@@ -54,7 +54,7 @@ Extensions: `.ts` `.tsx` `.js` `.jsx` `.mjs` `.cjs` `.rs` `.md` `.py` `.go`.
 
 Skipped directory segments: `node_modules`, `dist`, `target`, `.git`. Files larger than 1 MiB are skipped.
 
-The index is `.coderag/rust-index.json` and `.coderag/file-hashes.json`.
+A new index is `.locus/rust-index.json` and `.locus/file-hashes.json`. `.coderag/` is read only when `.locus/rust-index.json` is absent.
 
 ## Quick start
 
