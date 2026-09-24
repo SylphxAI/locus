@@ -75,7 +75,7 @@
 		"ai": "^4.0.35"
 	},
 	"devDependencies": {
-		"@types/node": "^24.9.2",
+		"@types/node": "^26.0.0",
 		"drizzle-kit": "^0.31.10",
 		"typescript": "^7.0.2",
 		"vitest": "^4.0.14",
