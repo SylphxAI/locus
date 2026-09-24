@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Public repository runner contract: GitHub-hosted runners only (2026-09-24).
 set -euo pipefail
-ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." \&\& pwd)}"
+ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 python3 - "$ROOT" <<'PY'
 """Public repository runner contract (platform decision 2026-09-24).
 
