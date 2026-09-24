@@ -1,44 +1,53 @@
 #!/usr/bin/env bash
-# Enforce the fleet-owned runner contract for this repository's direct jobs.
-# Reusable workflows are governed by the repository that owns their source.
+# Public repository runner contract: GitHub-hosted runners only (2026-09-24).
 set -euo pipefail
-
-ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-
+ROOT="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." \&\& pwd)}"
 python3 - "$ROOT" <<'PY'
-from pathlib import Path
+"""Public repository runner contract (platform decision 2026-09-24).
+
+A self-hosted runner a public repository can reach runs fork pull requests'
+code, so this repository runs on GitHub-hosted runners only: every static
+`runs-on` (and every matrix runner/host value) must be a GitHub-hosted label,
+and no selector may name `self-hosted` or a `sylphx-` profile.
+"""
+
+from __future__ import annotations
+
 import re
 import sys
+from pathlib import Path
 
-root = Path(sys.argv[1])
-workflow_dir = root / ".github" / "workflows"
-selection = re.compile(r"^\s*runs-on\s*:\s*(?P<value>.*?)(?:\s+#.*)?$")
-linux = re.compile(r"^sylphx-linux-(?:standard|large|xlarge|2xlarge)$")
-macos = re.compile(r"^\[\s*self-hosted\s*,\s*sylphx\s*,\s*macos\s*,\s*(?:nano|small|standard|large|xlarge|2xlarge)\s*\]$")
-hosted = re.compile(r"\b(?:ubuntu|macos|windows)-(?:latest|\d+(?:\.\d+)?)\b", re.I)
+HOSTED = re.compile(r"^(?:ubuntu|macos|windows)-(?:latest|\d+(?:\.\d+)?(?:-arm)?)$", re.I)
+FORBIDDEN = re.compile(r"self-hosted|sylphx-", re.I)
+SELECTOR = re.compile(r"^\s*(?:-\s*)?(?:runs-on|runner|host|os)\s*:\s*(?P<value>[^#]*?)\s*(?:#.*)?$")
 
-violations = []
-checked = 0
-for workflow in sorted((*workflow_dir.glob("*.yml"), *workflow_dir.glob("*.yaml"))):
-    for line_no, line in enumerate(workflow.read_text().splitlines(), start=1):
-        match = selection.match(line)
-        if not match:
-            continue
-        checked += 1
-        value = match.group("value").strip().strip("\"'")
-        if "${{" in value:
-            violations.append((workflow, line_no, "dynamic runner selection", value))
-        elif hosted.search(value):
-            violations.append((workflow, line_no, "GitHub-hosted runner", value))
-        elif not (linux.fullmatch(value) or macos.fullmatch(value)):
-            violations.append((workflow, line_no, "not a published static Sylphx profile", value))
 
-if checked == 0:
-    raise SystemExit("no direct workflow runner selections found")
-if violations:
-    for workflow, line_no, reason, value in violations:
-        print(f"{workflow.relative_to(root)}:{line_no}: {reason}: {value}", file=sys.stderr)
-    raise SystemExit("owned-runner profile contract failed")
+def main() -> int:
+    root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).resolve().parents[2]
+    workflows = sorted((*(root / ".github" / "workflows").glob("*.yml"), *(root / ".github" / "workflows").glob("*.yaml")))
+    errors: list[str] = []
+    for workflow in workflows:
+        lines = workflow.read_text(encoding="utf-8").splitlines()
+        for number, raw in enumerate(lines, 1):
+            match = SELECTOR.match(raw)
+            if not match:
+                continue
+            value = match.group("value").strip().strip("\"'")
+            if not value or "${{" in value:
+                continue
+            if FORBIDDEN.search(value):
+                errors.append(f"{workflow.relative_to(root)}:{number}: self-hosted runner in a public repository: {value}")
+            elif raw.lstrip().startswith("runs-on") and not HOSTED.fullmatch(value):
+                errors.append(f"{workflow.relative_to(root)}:{number}: not a GitHub-hosted runner label: {value}")
+            if raw.rstrip().endswith("runs-on:"):
+                continue
+    if errors:
+        print("\n".join(errors), file=sys.stderr)
+        return 1
+    print(f"OK: {len(workflows)} workflow(s) run on GitHub-hosted runners (public repository)")
+    return 0
 
-print(f"OK: {checked} direct workflow job(s) use static Sylphx-owned runner profiles")
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 PY
