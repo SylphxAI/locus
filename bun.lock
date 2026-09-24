@@ -21,7 +21,7 @@
       "dependencies": {
         "@libsql/client": "^0.14.0",
         "@parcel/watcher": "^2.5.1",
-        "@sylphx/synth": "^0.1.3",
+        "@sylphx/synth": "^0.3.0",
         "drizzle-orm": "^0.45.2",
         "ignore": "^7.0.5",
       },
@@ -74,10 +74,10 @@
         "typescript": "^7.0.2",
       },
       "optionalDependencies": {
-        "@sylphx/locus-darwin-arm64": "0.6.2",
-        "@sylphx/locus-darwin-x64": "0.6.2",
-        "@sylphx/locus-linux-arm64-gnu": "0.6.2",
-        "@sylphx/locus-linux-x64-gnu": "0.6.2",
+        "@sylphx/locus-darwin-arm64": "0.6.4",
+        "@sylphx/locus-darwin-x64": "0.6.4",
+        "@sylphx/locus-linux-arm64-gnu": "0.6.4",
+        "@sylphx/locus-linux-x64-gnu": "0.6.4",
       },
     },
     "packages/mcp-server/npm/darwin-arm64": {
@@ -518,7 +518,7 @@
 
     "@sylphx/locus-linux-x64-gnu": ["@sylphx/locus-linux-x64-gnu@workspace:packages/mcp-server/npm/linux-x64-gnu"],
 
-    "@sylphx/synth": ["@sylphx/synth@0.1.3", "", {}, "sha512-Wv5Dfku1CJNZlaASRz7/9JkI9WHM3Tz7EZkcF8UAR4S9wIDN1FkNAwE4VgPTHcHzIRK7XuiWZabl8B9WWujmRQ=="],
+    "@sylphx/synth": ["@sylphx/synth@0.3.2", "", {}, "sha512-g+8RFCzuxkU2OwC4T+Gn5BWjV93Ehhzatm7ccwM7yzhD22VBIe/wZ58WavoDzwOQg0uLbFRcURYDKEdXYevboA=="],
 
     "@sylphx/synth-c": ["@sylphx/synth-c@0.3.1", "", { "dependencies": { "@sylphx/synth": "^0.3.2", "tree-sitter-wasms": "^0.1.11", "web-tree-sitter": "^0.24.3" } }, "sha512-Rt+wRTRG5WSMB+B7ZhOn1cSAqqXh2O3DBki7ynL+AtC7vv1JxuEtp5k6sAOuZ76R4Evt3k5FRmcc4mhM35vdqg=="],
 
@@ -1214,39 +1214,13 @@
 
     "@sylphx/locus/@sylphx/biome-config": ["@sylphx/biome-config@0.4.1", "", { "peerDependencies": { "@biomejs/biome": "^2.0.0" } }, "sha512-yNdrXKcnhrXK+OB2WLEJix6cryj3PME5DbKpGFMJGA6/B1/+mpk2ChKiohifrf956FKQ3JTAqhLhZfY7lu18yA=="],
 
-    "@sylphx/synth-c/@sylphx/synth": ["@sylphx/synth@0.3.2", "", {}, "sha512-g+8RFCzuxkU2OwC4T+Gn5BWjV93Ehhzatm7ccwM7yzhD22VBIe/wZ58WavoDzwOQg0uLbFRcURYDKEdXYevboA=="],
-
-    "@sylphx/synth-go/@sylphx/synth": ["@sylphx/synth@0.3.2", "", {}, "sha512-g+8RFCzuxkU2OwC4T+Gn5BWjV93Ehhzatm7ccwM7yzhD22VBIe/wZ58WavoDzwOQg0uLbFRcURYDKEdXYevboA=="],
-
-    "@sylphx/synth-html/@sylphx/synth": ["@sylphx/synth@0.3.2", "", {}, "sha512-g+8RFCzuxkU2OwC4T+Gn5BWjV93Ehhzatm7ccwM7yzhD22VBIe/wZ58WavoDzwOQg0uLbFRcURYDKEdXYevboA=="],
-
     "@sylphx/synth-ini/@sylphx/synth": ["@sylphx/synth@0.2.0", "", {}, "sha512-28ibNaUcT54Hc62pT7DcRka7ItzlWkB6LJ7Im+lBId8JLiSjh7gw8MhzNk3daTDzrtky4E2GCAWsEGhLVxHGdQ=="],
 
-    "@sylphx/synth-java/@sylphx/synth": ["@sylphx/synth@0.3.2", "", {}, "sha512-g+8RFCzuxkU2OwC4T+Gn5BWjV93Ehhzatm7ccwM7yzhD22VBIe/wZ58WavoDzwOQg0uLbFRcURYDKEdXYevboA=="],
-
-    "@sylphx/synth-js/@sylphx/synth": ["@sylphx/synth@0.3.2", "", {}, "sha512-g+8RFCzuxkU2OwC4T+Gn5BWjV93Ehhzatm7ccwM7yzhD22VBIe/wZ58WavoDzwOQg0uLbFRcURYDKEdXYevboA=="],
-
-    "@sylphx/synth-json/@sylphx/synth": ["@sylphx/synth@0.3.2", "", {}, "sha512-g+8RFCzuxkU2OwC4T+Gn5BWjV93Ehhzatm7ccwM7yzhD22VBIe/wZ58WavoDzwOQg0uLbFRcURYDKEdXYevboA=="],
-
-    "@sylphx/synth-md/@sylphx/synth": ["@sylphx/synth@0.3.2", "", {}, "sha512-g+8RFCzuxkU2OwC4T+Gn5BWjV93Ehhzatm7ccwM7yzhD22VBIe/wZ58WavoDzwOQg0uLbFRcURYDKEdXYevboA=="],
-
-    "@sylphx/synth-md-gfm/@sylphx/synth": ["@sylphx/synth@0.3.2", "", {}, "sha512-g+8RFCzuxkU2OwC4T+Gn5BWjV93Ehhzatm7ccwM7yzhD22VBIe/wZ58WavoDzwOQg0uLbFRcURYDKEdXYevboA=="],
-
-    "@sylphx/synth-php/@sylphx/synth": ["@sylphx/synth@0.3.2", "", {}, "sha512-g+8RFCzuxkU2OwC4T+Gn5BWjV93Ehhzatm7ccwM7yzhD22VBIe/wZ58WavoDzwOQg0uLbFRcURYDKEdXYevboA=="],
-
     "@sylphx/synth-protobuf/@sylphx/synth": ["@sylphx/synth@0.2.0", "", {}, "sha512-28ibNaUcT54Hc62pT7DcRka7ItzlWkB6LJ7Im+lBId8JLiSjh7gw8MhzNk3daTDzrtky4E2GCAWsEGhLVxHGdQ=="],
-
-    "@sylphx/synth-python/@sylphx/synth": ["@sylphx/synth@0.3.2", "", {}, "sha512-g+8RFCzuxkU2OwC4T+Gn5BWjV93Ehhzatm7ccwM7yzhD22VBIe/wZ58WavoDzwOQg0uLbFRcURYDKEdXYevboA=="],
-
-    "@sylphx/synth-ruby/@sylphx/synth": ["@sylphx/synth@0.3.2", "", {}, "sha512-g+8RFCzuxkU2OwC4T+Gn5BWjV93Ehhzatm7ccwM7yzhD22VBIe/wZ58WavoDzwOQg0uLbFRcURYDKEdXYevboA=="],
-
-    "@sylphx/synth-rust/@sylphx/synth": ["@sylphx/synth@0.3.2", "", {}, "sha512-g+8RFCzuxkU2OwC4T+Gn5BWjV93Ehhzatm7ccwM7yzhD22VBIe/wZ58WavoDzwOQg0uLbFRcURYDKEdXYevboA=="],
 
     "@sylphx/synth-toml/@sylphx/synth": ["@sylphx/synth@0.2.0", "", {}, "sha512-28ibNaUcT54Hc62pT7DcRka7ItzlWkB6LJ7Im+lBId8JLiSjh7gw8MhzNk3daTDzrtky4E2GCAWsEGhLVxHGdQ=="],
 
     "@sylphx/synth-xml/@sylphx/synth": ["@sylphx/synth@0.2.0", "", {}, "sha512-28ibNaUcT54Hc62pT7DcRka7ItzlWkB6LJ7Im+lBId8JLiSjh7gw8MhzNk3daTDzrtky4E2GCAWsEGhLVxHGdQ=="],
-
-    "@sylphx/synth-yaml/@sylphx/synth": ["@sylphx/synth@0.3.2", "", {}, "sha512-g+8RFCzuxkU2OwC4T+Gn5BWjV93Ehhzatm7ccwM7yzhD22VBIe/wZ58WavoDzwOQg0uLbFRcURYDKEdXYevboA=="],
 
     "@vitest/mocker/estree-walker": ["estree-walker@3.0.3", "", { "dependencies": { "@types/estree": "^1.0.0" } }, "sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g=="],
 
