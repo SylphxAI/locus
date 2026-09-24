@@ -17,7 +17,7 @@ permissions:
 jobs:
   deprecate:
     if: ${{ inputs.confirm == 'DEPRECATE_CODERAG_MCP' }}
-    runs-on: sylphx-linux-standard
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-node@v4
         with:

@@ -22,7 +22,7 @@ jobs:
             key: darwin-arm64
           - target: x86_64-apple-darwin
             key: darwin-x64
-    runs-on: [self-hosted, sylphx, macos, standard]
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -43,7 +43,7 @@ jobs:
 
   build-linux-x64:
     if: ${{ inputs.confirm == 'PUBLISH' }}
-    runs-on: sylphx-linux-standard
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -79,7 +79,7 @@ jobs:
 
   build-linux-arm64:
     if: ${{ inputs.confirm == 'PUBLISH' }}
-    runs-on: sylphx-linux-standard
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -104,7 +104,7 @@ jobs:
 
   publish:
     needs: [build-darwin, build-linux-x64, build-linux-arm64]
-    runs-on: sylphx-linux-standard
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
