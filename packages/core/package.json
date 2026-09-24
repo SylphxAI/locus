@@ -45,7 +45,7 @@
 		"lint:fix": "biome check --write ."
 	},
 	"dependencies": {
-		"@libsql/client": "^0.14.0",
+		"@libsql/client": "^0.18.0",
 		"@parcel/watcher": "^2.5.1",
 		"@sylphx/synth": "^0.1.3",
 		"drizzle-orm": "^0.45.2",
