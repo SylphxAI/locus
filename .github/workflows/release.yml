@@ -31,7 +31,7 @@ jobs:
           - target: x86_64-apple-darwin
 
     name: Native ${{ matrix.target }}
-    runs-on: [self-hosted, sylphx, macos, standard]
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -77,7 +77,7 @@ jobs:
 
   build-linux-x64:
     name: Native x86_64-unknown-linux-gnu
-    runs-on: sylphx-linux-standard
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -128,7 +128,7 @@ jobs:
 
   build-linux-arm64:
     name: Native aarch64-unknown-linux-gnu
-    runs-on: sylphx-linux-standard
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4

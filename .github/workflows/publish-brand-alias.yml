@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   retired:
-    runs-on: sylphx-linux-standard
+    runs-on: ubuntu-latest
     steps:
       - name: Brand-sole — dual alias path retired
         run: |
