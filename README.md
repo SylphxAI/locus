@@ -1,4 +1,14 @@
-# Locus
+# Locus → now part of [repomap](https://github.com/SylphxAI/repomap)
+
+> **Locus has merged into [repomap](https://github.com/SylphxAI/repomap)**, a map of your codebase for AI agents. It combines code graph, hybrid search (Locus's BM25, now on tree-sitter AST chunks), call paths, change impact and an interactive graph UI in one Rust binary. It runs locally, needs no API key, and is MIT licensed.
+>
+> ```bash
+> npx -y @sylphx/repomap setup
+> ```
+>
+> `@sylphx/locus` 1.x and `@sylphx/coderag` 1.x are thin aliases of `@sylphx/repomap`, so existing configs (`npx -y @sylphx/locus --root=…`, `codebase_search`) keep working. New development happens in [SylphxAI/repomap](https://github.com/SylphxAI/repomap). The rest of this README documents Locus 0.x.
+
+## Locus 0.x (archived)
 
 ### The exact code chunk for the job
 
